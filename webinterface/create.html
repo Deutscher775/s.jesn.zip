@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Link Shortener & File Sharing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="./webinterface/create.js"></script>
+</head>
+<body class="flex flex-col items-center justify-center h-content bg-[#05001c] p-4">
+  <div class="popup fixed inset-0 flex items-center justify-center hidden" id="popup">
+    <div class="rounded-2xl border border-blue-100 bg-white max-w-md shadow-lg sm:p-2 lg:p-4" role="alert">
+      <div class="flex items-center gap-4">
+        <span class="rounded-full text-white">
+          <svg width="60px" height="60px" fill="#ff0000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 7h2v7h-2zm0 8h2v2h-2z"/><path d="m21.707 7.293-5-5A.996.996 0 0 0 16 2H8a.996.996 0 0 0-.707.293l-5 5A.996.996 0 0 0 2 8v8c0 .266.105.52.293.707l5 5A.996.996 0 0 0 8 22h8c.266 0 .52-.105.707-.293l5-5A.996.996 0 0 0 22 16V8a.996.996 0 0 0-.293-.707zM20 15.586 15.586 20H8.414L4 15.586V8.414L8.414 4h7.172L20 8.414v7.172z"/></svg>
+        </span>
+    
+        <p class="font-medium sm:text-lg" id="err.title">lol &#8592; Looks like a drowning person xD</p>
+      </div>
+    
+      <p class="mt-1 text-gray-500" id="err.message">
+        The error message is non-existent. An error while displaying an error message.. how ironic.
+      </p>
+      <button onclick="closePopup()" class="mt-1 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600" style="float: right;">Close</button>
+    </div>
+  </div>
+  <div class="w-full max-w-md p-6 bg-gray-300 shadow-lg rounded-2xl">
+    <h2 class="text-xl font-bold text-center mb-4">Short it!</h2>
+    <div class="flex space-x-2 mb-4">
+      <input id="urlInput" type="text" placeholder="Enter URL to shorten" class="w-full p-2 border rounded-lg" onkeypress="if(event.key === 'Enter') shortenUrl()">
+      <button onclick="shortenUrl()" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600">Shorten</button>
+    </div>
+    <div id="shortUrlContainer" class="hidden p-2 bg-gray-200 rounded-lg flex items-center justify-between">
+      <span id="shortened"></span>
+      <button onclick="copyText('shortened')" class="px-2 py-1 bg-gray-300 rounded">
+        <svg id="copyshortenedsvg" width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onclick="copyText('shortened')">
+          <path d="M14 7V7C14 6.06812 14 5.60218 13.8478 5.23463C13.6448 4.74458 13.2554 4.35523 12.7654 4.15224C12.3978 4 11.9319 4 11 4H8C6.11438 4 5.17157 4 4.58579 4.58579C4 5.17157 4 6.11438 4 8V11C4 11.9319 4 12.3978 4.15224 12.7654C4.35523 13.2554 4.74458 13.6448 5.23463 13.8478C5.60218 14 6.06812 14 7 14V14" stroke="#33363F" stroke-width="2"/>
+          <rect x="10" y="10" width="10" height="10" rx="2" stroke="#33363F" stroke-width="2"/>
+        </svg>
+      </button>
+    </div>
+    <div id="jsonResponseContainer" class="hidden p-2 bg-gray-200 rounded-lg mt-4">
+      <pre id="jsonResponse" class="text-sm"></pre>
+    </div>
+  </div>
+  
+  <div class="w-full max-w-md p-6 mt-6 bg-gray-300 shadow-lg rounded-2xl">
+    <h2 class="text-xl font-bold text-center mb-4">File Sharing</h2>
+    <div class="flex flex-col items-center space-y-2">
+      <input type="file" id="fileUpload" class="hidden" onchange="uploadFile()">
+      <label for="fileUpload" class="cursor-pointer flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600">
+        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.942 2.406a1.497 1.497 0 0 1 2.116 0L16.45 5.79c.39.39.39 1.03 0 1.42a.996.996 0 0 1-1.41 0l-.466-.466a10.002 10.002 0 0 1-1.407-1.768l-.215-.344-.206.207A10 10 0 0 1 13 7.079V15a1 1 0 1 1-2 0V7.078a10 10 0 0 1 .254-2.24l-.206-.206-.215.344c-.4.64-.873 1.234-1.407 1.768l-.466.466a.996.996 0 0 1-1.41 0c-.39-.39-.39-1.03 0-1.42l3.392-3.384zM20 11a1 1 0 0 0-1 1v6.077c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.57-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684V12a1 1 0 0 0-2 0v6.077c0 .76.082 1.185.319 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V12a1 1 0 0 0-1-1z" fill="#000000"/></svg> Upload File</label>
+    </div>
+    <div id="uploadProgressContainer" class="w-full bg-gray-200 rounded-full h-7 mt-4 hidden">
+      <div id="uploadProgress" class="bg-blue-500 h-7 rounded-full text-center text-white transition-all duration-100 ease-in-out" style="width: 0%;">
+      <span id="uploadProgressPercentage" class="font-bold p-0">0%</span><span id="estTime" class="text-gray-900 text-xs ml-2"></span>
+      </div>
+    </div>
+    <div id="fileUrlContainer" class="hidden cursor-pointer p-2 bg-gray-200 rounded-lg flex items-center justify-between mt-4" onclick="copyText('fileurl')">
+      <span id="fileurl"></span>
+      <button id="copyFileUrl" onclick="copyText('fileurl')" class="px-2 py-1 bg-gray-300 rounded cursor-pointer">
+        <svg id="copyfilesvg" width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onclick="copyText('fileurl')">
+          <path d="M14 7V7C14 6.06812 14 5.60218 13.8478 5.23463C13.6448 4.74458 13.2554 4.35523 12.7654 4.15224C12.3978 4 11.9319 4 11 4H8C6.11438 4 5.17157 4 4.58579 4.58579C4 5.17157 4 6.11438 4 8V11C4 11.9319 4 12.3978 4.15224 12.7654C4.35523 13.2554 4.74458 13.6448 5.23463 13.8478C5.60218 14 6.06812 14 7 14V14" stroke="#33363F" stroke-width="2"/>
+          <rect x="10" y="10" width="10" height="10" rx="2" stroke="#33363F" stroke-width="2"/>
+        </svg>
+      </button>
+    </div>
+    </div>
+  </div>
+  <div id="footer" class="">
+    <div class="flex justify-center mt-4">
+      <a href="https://github.com/deutscher775/s.jesn.zip" target="_blank" class="flex items-center gap-2 text-gray-300 hover:text-gray-200">
+        <svg width="30px" height="30px" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.461-1.11-1.461-.908-.62.069-.608.069-.608 1.004.07 1.532 1.032 1.532 1.032.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.983 1.03-2.682-.103-.253-.446-1.27.098-2.645 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.91-1.296 2.75-1.026 2.75-1.026.544 1.375.201 2.392.099 2.645.64.699 1.03 1.591 1.03 2.682 0 3.842-2.337 4.687-4.565 4.936.36.31.682.92.682 1.852 0 1.338-.012 2.419-.012 2.747 0 .267.18.578.688.48A10.013 10.013 0 0 0 22 12c0-5.523-4.477-10-10-10z"/>
+        </svg>
+        <span>GitHub</span>
+      </a>
+    </div>
+    <div class="legal mt-6 text-center text-gray-400 text-sm">
+      <p>&copy; 2025 - Present jesn.zip. All rights reserved.</p>
+      <p>
+      <a href="https://astroid.cc/imprint" class="text-blue-400 hover:underline">Imprint</a> | 
+      <a href="/privacy.html" class="text-blue-400 hover:underline">Privacy Policy</a>
+      </p>
+    </div>
+    </div>
+</body>
+</html>
