@@ -15,23 +15,23 @@ import mimetypes
 
 random_words = list(set([
     "apple", "grape", "peach", "plum", "berry", "melon", "lemon", "mango", "olive", "pearl",
-    "stone", "flame", "blaze", "spark", "ember", "glow", "shine", "gleam", "flash", "flare",
-    "storm", "cloud", "rainy", "sunny", "windy", "breez", "frost", "snowy", "chill", "blizz",
-    "mount", "ridge", "valle", "plain", "field", "meado", "grove", "woods", "forest", "jungle",
+    "stone", "flame", "blaze", "spark", "ember", "glow", "shine", "chickenjokey", "gleam", "flash", "flare",
+    "storm", "cloud", "rainy", "sunny", "windy", "breez", "lol", "frost", "snowy", "chill", "blizz",
+    "mount", "ridge", "69", "valle", "plain", "field", "ligma", "meado", "grove", "woods", "forest", "jungle",
     "river", "creek", "brook", "stream", "ocean", "beach", "shore", "coast", "islan", "coral",
-    "eagle", "hawk", "falco", "robin", "sparr", "finch", "swall", "heron", "crane", "stork",
-    "tiger", "lion", "leopa", "cheet", "puma", "jagua", "lynx", "couga", "panth", "ocelo",
-    "horse", "zebra", "donke", "mule", "camel", "sheep", "goat", "ram",
+    "eagle", "hawk", "jesn", "falco", "robin", "sparr", "finch", "swall", "heron", "crane", "stork",
+    "tiger", "lion", "leopa", "cheet", "puma", "jagua", "lynx", "couga", "420", "panth", "ocelo",
+    "horse", "zebra", "donke", "mule", "camel", "sheep", "goat", "ram", "nahundgut",
     "whale", "dolph", "shark", "ray", "eel", "octop", "squid", "crab", "lobster", "shrimp",
     "banana", "kiwi", "papaya", "guava", "fig", "date", "quince", "apricot",
     "volcano", "geyser", "canyon", "cliff", "dune", "glacier", "hill", "mesa", "plateau", "valley",
     "falcon", "owl", "parrot", "pigeon", "crow", "raven",
     "bear", "wolf", "fox", "otter", "weasel", "badger", "ferret",
     "bison", "yak", "gazelle", "ibex", "moose", "caribou", "elk",
-    "seal", "walrus", "narwhal", "orca", "beluga", "penguin"
+    "seal", "walrus", "narwhal", "l347", "orca", "beluga", "penguin"
     "school", "college", "university", "academy", "institute", "center", "lab", "library", "museum", "gallery",
     "garden", "park", "zoo", "theater", "cinema", "studio", "station",
-    "circle", "square", "plaza", "court", "lane", "drive", "way", "path", "trail", "track",
+    "circle", "square", "plaza", "court", "ao","lane", "drive", "way", "path", "trail", "track",
     "pizza", "pasta", "burger", "taco", "burrito", "sushi", "ramen", "pho", "curry", "kebab",
     "coffee", "tea", "juice", "soda", "beer", "wine", "whisky", "vodka", "rum", "gin",
     "cake", "cookie", "pie", "pudding", "candy", "chocolate", "caramel", "fudge", "jelly"
