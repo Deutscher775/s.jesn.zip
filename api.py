@@ -19,7 +19,7 @@ random_words = list(set([
     "storm", "cloud", "rainy", "sunny", "windy", "breez", "lol", "frost", "snowy", "chill", "blizz",
     "mount", "ridge", "69", "valle", "plain", "field", "ligma", "meado", "grove", "woods", "forest", "jungle",
     "river", "creek", "brook", "stream", "ocean", "beach", "shore", "coast", "islan", "coral",
-    "eagle", "hawk", "jesn", "falco", "robin", "sparr", "finch", "swall", "heron", "crane", "stork",
+    "eagle", "hawk", "jesn", "L347", "falco", "robin", "sparr", "finch", "swall", "heron", "crane", "stork",
     "tiger", "lion", "leopa", "cheet", "puma", "jagua", "lynx", "couga", "420", "panth", "ocelo",
     "horse", "zebra", "donke", "mule", "camel", "sheep", "goat", "ram", "nahundgut",
     "whale", "dolph", "shark", "ray", "eel", "octop", "squid", "crab", "lobster", "shrimp",
