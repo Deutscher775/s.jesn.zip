@@ -1,6 +1,9 @@
 # s.jesn.zip
 A file sharing and link shortening service.
 
+## My motto
+It works. Code might be ass, but never change a running system. Comments inside of code are probably from copilot ¯\\_(ツ)_/¯
+
 ## Purpose
 This project began as a personal tool for shortening links and sharing files. After a few friends expressed interest, I decided to make it publicly available. You're welcome to use it, but please refrain from spamming or misusing the unlimited upload and sharing features.
 
