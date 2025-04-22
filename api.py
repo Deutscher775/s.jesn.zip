@@ -58,6 +58,10 @@ def read_root():
 def render_create_webinterface():
     return fastapi.responses.HTMLResponse(content=open("./webinterface/create.html", "r").read())
 
+@app.get("/privacy.html")
+def render_privacy_html():
+    return fastapi.responses.HTMLResponse(content=open("./webinterface/privacy.html", "r").read())
+
 @app.get("/privacy")
 def render_privacy_webinterface():
     return fastapi.responses.HTMLResponse(content=open("./webinterface/privacy.html", "r").read())
