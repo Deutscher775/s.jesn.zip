@@ -245,8 +245,14 @@ function uploadFileWithFile(file) {
 				document.getElementById("fileUrlContainer").classList.remove("hidden");
 				document.getElementById("fileurl").innerText = response.url;
 				var url = response.url.replaceAll(" ", "%20");
-				document.getElementById("fileurl").innerHTML =
-					"<a href='" + url + "' target='_blank'>" + url + "</a>";
+				if (url.length > 70) {
+					const shortUrl = url.slice(0, 58) + "..";
+					document.getElementById("fileurl").innerHTML =
+						"<a href='" + url + "' target='_blank'>" + shortUrl + "</a>";
+				} else {
+					document.getElementById("fileurl").innerHTML =
+						"<a href='" + url + "' target='_blank'>" + url + "</a>";
+				}
 				document
 					.getElementById("uploadProgressContainer")
 					.classList.add("hidden");
@@ -423,8 +429,14 @@ function uploadFile() {
 				document.getElementById("fileUrlContainer").classList.remove("hidden");
 				document.getElementById("fileurl").innerText = response.url;
 				var url = response.url.replaceAll(" ", "%20");
-				document.getElementById("fileurl").innerHTML =
-					"<a href='" + url + "' target='_blank'>" + url + "</a>";
+				if (url.length > 70) {
+					const shortUrl = url.slice(0, 58) + "..";
+					document.getElementById("fileurl").innerHTML =
+						"<a href='" + url + "' target='_blank'>" + shortUrl + "</a>";
+				} else {
+					document.getElementById("fileurl").innerHTML =
+						"<a href='" + url + "' target='_blank'>" + url + "</a>";
+				}
 				document
 					.getElementById("uploadProgressContainer")
 					.classList.add("hidden");
@@ -594,11 +606,15 @@ function listenForConversionProgress(sharePath) {
 					.getElementById("convertProgressContainer")
 					.classList.add("hidden");
 				document.getElementById("convertResult").classList.remove("hidden");
+				let displayUrl = new_share_url;
+				if (new_share_url.length > 70) {
+					displayUrl = new_share_url.slice(0, 58) + "..";
+				}
 				document.getElementById("convertedFileLink").innerHTML =
 					"<a href='" +
 					new_share_url +
 					"' target='_blank'>" +
-					new_share_url +
+					displayUrl +
 					"</a>";
 			}
 		}
@@ -664,8 +680,14 @@ function uploadFileWithFile(file) {
 				document.getElementById("fileUrlContainer").classList.remove("hidden");
 				document.getElementById("fileurl").innerText = response.url;
 				var url = response.url.replaceAll(" ", "%20");
-				document.getElementById("fileurl").innerHTML =
-					"<a href='" + url + "'>" + url + "</a>";
+				if (url.length > 70) {
+					const shortUrl = url.slice(0, 58) + "..";
+					document.getElementById("fileurl").innerHTML =
+						"<a href='" + url + "' target='_blank'>" + shortUrl + "</a>";
+				} else {
+					document.getElementById("fileurl").innerHTML =
+						"<a href='" + url + "' target='_blank'>" + url + "</a>";
+				}
 				document
 					.getElementById("uploadProgressContainer")
 					.classList.add("hidden");

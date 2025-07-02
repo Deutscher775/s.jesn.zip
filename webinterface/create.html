@@ -389,7 +389,7 @@
           function downloadConvertedFile() {
             const linkElem = document.getElementById('convertedFileLink');
             if (linkElem && linkElem.textContent) {
-              let url = linkElem.textContent.trim();
+                let url = linkElem.querySelector('a') ? linkElem.querySelector('a').href : '';
               if (url) {
                 if (url.indexOf('?') === -1) {
                   url += '?download=true';
