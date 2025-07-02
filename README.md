@@ -22,4 +22,4 @@ If you would like to contribute to this project, please feel free to submit a pu
 If you have any questions or need assistance, please reach out to me on Discord (jesn.zip) or via email (mail@deutscher775.de).
 
 ### Copyright
-Copyright (c) 2025 - Present by Deutscher 775 (https://deutscher775.de). All rights reserved.
+Copyright (c) 2025 - Present by Jason (https://jesn.zip). All rights reserved.
