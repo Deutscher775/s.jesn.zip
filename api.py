@@ -11,6 +11,11 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import threading
 import time
 import mimetypes
+import subprocess
+from fastapi import UploadFile, File, Form
+import re
+import queue
+from fastapi.responses import StreamingResponse
 
 
 random_words = list(set([
@@ -36,6 +41,9 @@ random_words = list(set([
     "coffee", "tea", "juice", "soda", "beer", "wine", "whisky", "vodka", "rum", "gin",
     "cake", "cookie", "pie", "pudding", "candy", "chocolate", "caramel", "fudge", "jelly"
 ]))
+
+# Dictionary to track conversion progress
+conversion_progress = {}
 
 app = fastapi.FastAPI()
 
@@ -101,6 +109,108 @@ async def shorten_url(request: fastapi.Request):
     linkfile.write(f"{share_path};{url}\n")
     return fastapi.responses.JSONResponse(status_code=201, content={"url": share_path, "original_url": url})
 
+def stipFFmpegDebug(line):
+    """
+    Entfernt sensible Pfade und Usernamen aus einer FFmpeg-Debug-Zeile.
+    """
+    # Windows-Pfade (z.B. C:\Users\jason\... oder D:\irgendwas\...)
+    line = re.sub(r"[A-Za-z]:\\(?:[^\\\s]+\\)*[^\\\s]*", "<PATH>", line)
+    # Unix-Pfade (z.B. /home/user/..., /tmp/..., /irgendwas)
+    line = re.sub(r"/(?:[^/\s]+/)*[^/\s]*", "<PATH>", line)
+    # Usernamen in Windows-Pfaden maskieren (z.B. C:\Users\jason -> C:\Users\<USER>)
+    line = re.sub(r"C:\\Users\\[^\\\s]+", r"C:\\Users\\<USER>", line)
+    # Usernamen in Linux-Pfaden maskieren (z.B. /home/jason -> /home/<USER>)
+    line = re.sub(r"/home/[^/\s]+", r"/<USER>/", line)
+    # Usernamen in /root/... Pfaden maskieren (z.B. /root/.cache -> /root/<USER>)
+    line = re.sub(r"/root/[^/\s]+", r"/<USER>/", line)
+    return line
+
+
+def ffmpeg_convert(input_path, output_path, share_path):
+    q = conversion_progress[share_path]
+    cmd = [
+        "ffmpeg",
+        "-analyzeduration", "100M",
+        "-probesize", "100M",
+        "-y",
+        "-i", input_path,
+        output_path
+    ]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    duration = None
+    for line in process.stderr:
+        clean_line = stipFFmpegDebug(line)
+        print(line, end="")  # Print FFmpeg output live to console
+        # Gesamtdauer extrahieren
+        if duration is None:
+            match = re.search(r"Duration: (\d+):(\d+):(\d+\.\d+)", line)
+            if match:
+                h, m, s = match.groups()
+                duration = int(h) * 3600 + int(m) * 60 + float(s)
+        # Fortschritt extrahieren
+        match = re.search(r"time=(\d+):(\d+):(\d+\.\d+)", line)
+        if match and duration:
+            h, m, s = match.groups()
+            current = int(h) * 3600 + int(m) * 60 + float(s)
+            percent = (current / duration) * 100
+            eta = (duration - current)
+            # Fortschritt in Queue speichern
+            q.put({"percent": percent, "eta": eta, "debug": clean_line, "finished": False})
+    process.wait()
+    q.put({"percent": 100, "eta": 0, "finished": True, "share_path": share_path})
+
+@app.post("/api/convert")
+async def convert_to_share(
+    file: UploadFile = File(...),
+    output_ext: str = Form(...),
+    origin: str = Form(None)
+):
+    random_word = random.choice(random_words)
+    input_filename = file.filename
+    filename_wo_ext = ".".join(input_filename.strip().split(".")[:-1]) or input_filename
+    share_path = f"{random_word}/{filename_wo_ext}.{output_ext}"
+    input_file_path = f"{pathlib.Path(__file__).parent.resolve()}/uploads/JESNZIP_CONV_INPUT__{input_filename}"
+    output_file_path = f"{pathlib.Path(__file__).parent.resolve()}/uploads/{filename_wo_ext}.{output_ext}"
+
+    with open(input_file_path, "wb") as f:
+        f.write(await file.read())
+
+    # Fortschritts-Queue anlegen
+    q = queue.Queue()
+    conversion_progress[share_path] = q
+    print(conversion_progress)
+
+    # FFmpeg-Konvertierung im Thread starten
+    threading.Thread(target=ffmpeg_convert, args=(input_file_path, output_file_path, share_path), daemon=True).start()
+
+    file_url = f"{origin}/u/{random_word}/{filename_wo_ext}.{output_ext}"
+    with open("files.txt", "a+") as file_file:
+        file_file.write(f"{file_url};{output_file_path}\n")
+
+    return fastapi.responses.JSONResponse(
+        status_code=201,
+        content={"share_url": file_url, "share_path": share_path, "conversion_started": True}
+    )
+
+@app.get("/api/convert_progress/{share_path:path}")
+async def convert_progress(share_path: str):
+    if "%2F" in share_path:
+        share_path = share_path.replace("%2F", "/")
+    async def event_generator():
+        q = conversion_progress.get(share_path)
+        if not q:
+            yield f"data: {json.dumps({'percent': 0, 'eta': None, 'error': 'No conversion'})}\n\n"
+            return
+        while True:
+            try:
+                progress = q.get(timeout=30)
+                yield f"data: {json.dumps(progress)}\n\n"
+                if progress.get("finished"):
+                    break
+            except queue.Empty:
+                break
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
 @app.delete("/{share_path}")
 def delete_share(share_path: str):
     shares_file = open("shares.json", "r")
@@ -117,10 +227,13 @@ def delete_share(share_path: str):
     
 @app.get("/webinterface/create.js")
 def render_create_js():
-    return fastapi.responses.FileResponse("./webinterface/create.js")
+    if not os.path.exists(f"{pathlib.Path(__file__).parent.resolve()}/webinterface/create.js"):
+        return fastapi.responses.JSONResponse(status_code=404, content={"error": "create.js not found"})
+    # Serve the create.js file from the webinterface directory
+    return fastapi.responses.FileResponse(f"{pathlib.Path(__file__).parent.resolve()}/webinterface/create.js")
 
 @app.get("/u/{random_word}/{file_path}")
-def download_file(random_word: str, file_path: str):
+def download_file(random_word: str, file_path: str, download: bool = False):
     file_path = random_word + "/" + file_path
     file_file = open("files.txt", "r")
     files = file_file.readlines()
@@ -132,7 +245,15 @@ def download_file(random_word: str, file_path: str):
             with open(file_path_on_disk, "rb") as file_file:
                 file_content = file_file.read()
             mimetype, _ = mimetypes.guess_type(file_path_on_disk)
-            return fastapi.responses.Response(content=file_content, media_type=mimetype)
+            if download:
+                return fastapi.responses.FileResponse(
+                    path=file_path_on_disk,
+                    media_type=mimetype,
+                    filename=os.path.basename(file_path_on_disk),
+                    headers={"Content-Disposition": f'attachment; filename="{os.path.basename(file_path_on_disk)}"'}
+                )
+            else:
+                return fastapi.responses.Response(content=file_content, media_type=mimetype)
     return fastapi.responses.JSONResponse(status_code=404, content={"error": "File not found"})
 
 
