@@ -90,7 +90,8 @@
   overflow-y: auto;
   position: absolute;
   width: 100%;
-  top: 100%;
+  bottom: 100%;
+  top: auto;
   left: 0;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -181,7 +182,7 @@
 
 .format-option:hover {
   background: #e9ecef;
-  border-color: #6c757d;
+  border-color: #57aefa;
 }
 
 .format-option.selected {
@@ -250,162 +251,169 @@
     </div>
   </div>
   
-  <div class="w-full max-w-md p-6 mt-6 bg-gray-300 shadow-lg rounded-2xl">
-    <h2 class="text-xl font-bold text-center mb-4">File Sharing</h2>
-    <div class="container" id="fileUploadContainer">
-      <div class="header">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
-          <path d="M7 10V9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9V10C19.2091 10 21 11.7909 21 14C21 15.4806 20.1956 16.8084 19 17.5M7 10C4.79086 10 3 11.7909 3 14C3 15.4806 3.8044 16.8084 5 17.5M7 10C7.43285 10 7.84965 10.0688 8.24006 10.1959M12 12V21M12 12L15 15M12 12L9 15" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-        </g></svg>
-        <p>Browse File to upload! (max. 500MB)</p>
-      </div>
-      <label for="fileUpload" class="footer">
-        <svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M15.331 6H8.5v20h15V14.154h-8.169z"></path><path d="M18.153 6h-.009v5.342H23.5v-.002z"></path></g></svg>
-        <p id="fileUploadLabel">No file selected</p>
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
-          <path d="M5.16565 10.1534C5.07629 8.99181 5.99473 8 7.15975 8H16.8402C18.0053 8 18.9237 8.9918 18.8344 10.1534L18.142 19.1534C18.0619 20.1954 17.193 21 16.1479 21H7.85206C6.80699 21 5.93811 20.1954 5.85795 19.1534L5.16565 10.1534Z" stroke="#000000" stroke-width="2"></path>
-          <path d="M19.5 5H4.5" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
-          <path d="M10 3C10 2.44772 10.4477 2 11 2H13C13.5523 2 14 2.44772 14 3V5H10V3Z" stroke="#000000" stroke-width="2"></path>
-        </g></svg>
-      </label>
-      <input id="fileUpload" type="file" style="display: none;" onchange="uploadFile()">
-    </div>
-    <div id="uploadProgressContainer" class="w-full bg-gray-200 rounded-full h-7 mt-4 hidden">
-      <div id="uploadProgress" class="bg-blue-500 h-7 rounded-full text-center text-white transition-all duration-100 ease-in-out" style="width: 0%;">
-      <span id="uploadProgressPercentage" class="font-bold p-0">0%</span><span id="estTime" class="text-gray-900 text-xs ml-2"></span>
-      </div>
-    </div>
-    <div id="fileUrlContainer" class="hidden cursor-pointer p-2 bg-gray-200 rounded-lg flex items-center justify-between mt-4" onclick="copyText('fileurl')">
-      <span id="fileurl"></span>
-      <button id="copyFileUrl" onclick="copyText('fileurl')" class="px-2 py-1 bg-gray-300 rounded cursor-pointer">
-        <svg id="copyfilesvg" width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onclick="copyText('fileurl')">
-          <path d="M14 7V7C14 6.06812 14 5.60218 13.8478 5.23463C13.6448 4.74458 13.2554 4.35523 12.7654 4.15224C12.3978 4 11.9319 4 11 4H8C6.11438 4 5.17157 4 4.58579 4.58579C4 5.17157 4 6.11438 4 8V11C4 11.9319 4 12.3978 4.15224 12.7654C4.35523 13.2554 4.74458 13.6448 5.23463 13.8478C5.60218 14 6.06812 14 7 14V14" stroke="#33363F" stroke-width="2"/>
-          <rect x="10" y="10" width="10" height="10" rx="2" stroke="#33363F" stroke-width="2"/>
-        </svg>
-      </button>
-    </div>
-    </div>
-  </div>
-  <div class="w-full max-w-md p-6 mt-6 bg-gray-300 shadow-lg rounded-2xl">
-    <h2 class="text-xl font-bold text-center mb-4">File Converter</h2>
-    <form id="fileConvertForm" class="flex flex-col space-y-4" onsubmit="convertFile(event)">
-      <div class="container" id="fileConvertContainer">
-        <div class="header">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
-            <path d="M7 10V9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9V10C19.2091 10 21 11.7909 21 14C21 15.4806 20.1956 16.8084 19 17.5M7 10C4.79086 10 3 11.7909 3 14C3 15.4806 3.8044 16.8084 5 17.5M7 10C7.43285 10 7.84965 10.0688 8.24006 10.1959M12 12V21M12 12L15 15M12 12L9 15" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-          </g></svg>
-          <p>Browse File to convert! (max. 500MB)</p>
+  <div class="flex flex-col md:flex-row gap-6 w-full max-w-4xl mt-6">
+    <div class="w-full md:w-1/2 flex-1">
+      <!-- File Sharing Block -->
+      <div class="w-full p-6 bg-gray-300 shadow-lg rounded-2xl">
+        <h2 class="text-xl font-bold text-center mb-4">File Sharing</h2>
+        <div class="container" id="fileUploadContainer">
+          <div class="header">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
+              <path d="M7 10V9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9V10C19.2091 10 21 11.7909 21 14C21 15.4806 20.1956 16.8084 19 17.5M7 10C4.79086 10 3 11.7909 3 14C3 15.4806 3.8044 16.8084 5 17.5M7 10C7.43285 10 7.84965 10.0688 8.24006 10.1959M12 12V21M12 12L15 15M12 12L9 15" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </g></svg>
+            <p>Browse File to upload! (max. 500MB)</p>
+          </div>
+          <label for="fileUpload" class="footer">
+            <svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M15.331 6H8.5v20h15V14.154h-8.169z"></path><path d="M18.153 6h-.009v5.342H23.5v-.002z"></path></g></svg>
+            <p id="fileUploadLabel">No file selected</p>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
+              <path d="M5.16565 10.1534C5.07629 8.99181 5.99473 8 7.15975 8H16.8402C18.0053 8 18.9237 8.9918 18.8344 10.1534L18.142 19.1534C18.0619 20.1954 17.193 21 16.1479 21H7.85206C6.80699 21 5.93811 20.1954 5.85795 19.1534L5.16565 10.1534Z" stroke="#000000" stroke-width="2"></path>
+              <path d="M19.5 5H4.5" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M10 3C10 2.44772 10.4477 2 11 2H13C13.5523 2 14 2.44772 14 3V5H10V3Z" stroke="#000000" stroke-width="2"></path>
+            </g></svg>
+          </label>
+          <input id="fileUpload" type="file" style="display: none;" onchange="uploadFile()">
         </div>
-        <label for="convertFileInput" class="footer">
-          <svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M15.331 6H8.5v20h15V14.154h-8.169z"></path><path d="M18.153 6h-.009v5.342H23.5v-.002z"></path></g></svg>
-          <p id="convertFileLabel">No file selected</p>
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
-            <path d="M5.16565 10.1534C5.07629 8.99181 5.99473 8 7.15975 8H16.8402C18.0053 8 18.9237 8.9918 18.8344 10.1534L18.142 19.1534C18.0619 20.1954 17.193 21 16.1479 21H7.85206C6.80699 21 5.93811 20.1954 5.85795 19.1534L5.16565 10.1534Z" stroke="#000000" stroke-width="2"></path>
-            <path d="M19.5 5H4.5" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
-            <path d="M10 3C10 2.44772 10.4477 2 11 2H13C13.5523 2 14 2.44772 14 3V5H10V3Z" stroke="#000000" stroke-width="2"></path>
-          </g></svg>
-        </label>
-        <input id="convertFileInput" type="file" style="display: none;" required>
-      </div>
-      <div class="flex flex-col">
-        <label for="extensionSelect" class="mb-1 font-medium">Convert to extension</label>
-        <div class="format-selector">
-          <div class="format-display" onclick="toggleFormatMenu()">
-            <span id="selectedFormat">Select extension</span>
-            <svg class="format-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <div id="uploadProgressContainer" class="w-full bg-gray-200 rounded-full h-7 mt-4 hidden">
+          <div id="uploadProgress" class="bg-blue-500 h-7 rounded-full text-center text-white transition-all duration-100 ease-in-out" style="width: 0%;">
+          <span id="uploadProgressPercentage" class="font-bold p-0">0%</span><span id="estTime" class="text-gray-900 text-xs ml-2"></span>
+          </div>
+        </div>
+        <div id="fileUrlContainer" class="hidden cursor-pointer p-2 bg-gray-200 rounded-lg flex items-center justify-between mt-4" onclick="copyText('fileurl')">
+          <span id="fileurl"></span>
+          <button id="copyFileUrl" onclick="copyText('fileurl')" class="px-2 py-1 bg-gray-300 rounded cursor-pointer">
+            <svg id="copyfilesvg" width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onclick="copyText('fileurl')">
+              <path d="M14 7V7C14 6.06812 14 5.60218 13.8478 5.23463C13.6448 4.74458 13.2554 4.35523 12.7654 4.15224C12.3978 4 11.9319 4 11 4H8C6.11438 4 5.17157 4 4.58579 4.58579C4 5.17157 4 6.11438 4 8V11C4 11.9319 4 12.3978 4.15224 12.7654C4.35523 13.2554 4.74458 13.6448 5.23463 13.8478C5.60218 14 6.06812 14 7 14V14" stroke="#33363F" stroke-width="2"/>
+              <rect x="10" y="10" width="10" height="10" rx="2" stroke="#33363F" stroke-width="2"/>
             </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="w-full md:w-1/2 flex-1">
+      <!-- File Converter Block -->
+      <div class="w-full p-6 bg-gray-300 shadow-lg rounded-2xl">
+        <h2 class="text-xl font-bold text-center mb-4">File Converter</h2>
+        <form id="fileConvertForm" class="flex flex-col space-y-4" onsubmit="convertFile(event)">
+          <div class="container" id="fileConvertContainer">
+            <div class="header">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
+                <path d="M7 10V9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9V10C19.2091 10 21 11.7909 21 14C21 15.4806 20.1956 16.8084 19 17.5M7 10C4.79086 10 3 11.7909 3 14C3 15.4806 3.8044 16.8084 5 17.5M7 10C7.43285 10 7.84965 10.0688 8.24006 10.1959M12 12V21M12 12L15 15M12 12L9 15" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              </g></svg>
+              <p>Browse File to convert! (max. 500MB)</p>
+            </div>
+            <label for="convertFileInput" class="footer">
+              <svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M15.331 6H8.5v20h15V14.154h-8.169z"></path><path d="M18.153 6h-.009v5.342H23.5v-.002z"></path></g></svg>
+              <p id="convertFileLabel">No file selected</p>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier">
+                <path d="M5.16565 10.1534C5.07629 8.99181 5.99473 8 7.15975 8H16.8402C18.0053 8 18.9237 8.9918 18.8344 10.1534L18.142 19.1534C18.0619 20.1954 17.193 21 16.1479 21H7.85206C6.80699 21 5.93811 20.1954 5.85795 19.1534L5.16565 10.1534Z" stroke="#000000" stroke-width="2"></path>
+                <path d="M19.5 5H4.5" stroke="#000000" stroke-width="2" stroke-linecap="round"></path>
+                <path d="M10 3C10 2.44772 10.4477 2 11 2H13C13.5523 2 14 2.44772 14 3V5H10V3Z" stroke="#000000" stroke-width="2"></path>
+              </g></svg>
+            </label>
+            <input id="convertFileInput" type="file" style="display: none;" required>
           </div>
-          <div class="format-menu hidden" id="formatMenu">
-            <div class="format-category">
-              <div class="category-header">Video Formats</div>
-              <div class="format-options">
-                <div class="format-option" data-value="mp4">MP4</div>
-                <div class="format-option" data-value="mov">MOV</div>
-                <div class="format-option" data-value="avi">AVI</div>
-                <div class="format-option" data-value="mkv">MKV</div>
-                <div class="format-option" data-value="webm">WEBM</div>
-                <div class="format-option" data-value="flv">FLV</div>
-                <div class="format-option" data-value="wmv">WMV</div>
-                <div class="format-option" data-value="mpeg">MPEG</div>
-                <div class="format-option" data-value="mpg">MPG</div>
-                <div class="format-option" data-value="3gp">3GP</div>
+          <div class="flex flex-col">
+            <label for="extensionSelect" class="mb-1 font-medium">Convert to extension</label>
+            <div class="format-selector">
+              <div class="format-display" onclick="toggleFormatMenu()">
+                <span id="selectedFormat">Select extension</span>
+                <svg class="format-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="format-menu hidden" id="formatMenu">
+                <div class="format-category">
+                  <div class="category-header">Video Formats</div>
+                  <div class="format-options">
+                    <div class="format-option" data-value="mp4"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>MP4</div>
+                    <div class="format-option" data-value="mov"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>MOV</div>
+                    <div class="format-option" data-value="avi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>AVI</div>
+                    <div class="format-option" data-value="mkv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>MKV</div>
+                    <div class="format-option" data-value="webm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>WEBM</div>
+                    <div class="format-option" data-value="flv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>FLV</div>
+                    <div class="format-option" data-value="wmv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>WMV</div>
+                    <div class="format-option" data-value="mpeg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>MPEG</div>
+                    <div class="format-option" data-value="mpg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>MPG</div>
+                    <div class="format-option" data-value="3gp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#007bff" stroke-width="2"/><rect x="7" y="9" width="10" height="6" rx="1" fill="#007bff" opacity="0.2"/></svg>3GP</div>
+                  </div>
+                </div>
+                <div class="format-category">
+                  <div class="category-header">Audio Formats</div>
+                  <div class="format-options">
+                    <div class="format-option" data-value="mp3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 17V5l12-2v12" stroke="#28a745" stroke-width="2"/><circle cx="6" cy="17" r="3" stroke="#28a745" stroke-width="2"/><circle cx="18" cy="15" r="3" stroke="#28a745" stroke-width="2"/></svg>MP3</div>
+                    <div class="format-option" data-value="wav"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 17V5l12-2v12" stroke="#28a745" stroke-width="2"/><circle cx="6" cy="17" r="3" stroke="#28a745" stroke-width="2"/><circle cx="18" cy="15" r="3" stroke="#28a745" stroke-width="2"/></svg>WAV</div>
+                    <div class="format-option" data-value="aac"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 17V5l12-2v12" stroke="#28a745" stroke-width="2"/><circle cx="6" cy="17" r="3" stroke="#28a745" stroke-width="2"/><circle cx="18" cy="15" r="3" stroke="#28a745" stroke-width="2"/></svg>AAC</div>
+                    <div class="format-option" data-value="flac"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 17V5l12-2v12" stroke="#28a745" stroke-width="2"/><circle cx="6" cy="17" r="3" stroke="#28a745" stroke-width="2"/><circle cx="18" cy="15" r="3" stroke="#28a745" stroke-width="2"/></svg>FLAC</div>
+                    <div class="format-option" data-value="m4a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 17V5l12-2v12" stroke="#28a745" stroke-width="2"/><circle cx="6" cy="17" r="3" stroke="#28a745" stroke-width="2"/><circle cx="18" cy="15" r="3" stroke="#28a745" stroke-width="2"/></svg>M4A</div>
+                    <div class="format-option" data-value="opus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 17V5l12-2v12" stroke="#28a745" stroke-width="2"/><circle cx="6" cy="17" r="3" stroke="#28a745" stroke-width="2"/><circle cx="18" cy="15" r="3" stroke="#28a745" stroke-width="2"/></svg>OPUS</div>
+                    <div class="format-option" data-value="ogg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 17V5l12-2v12" stroke="#28a745" stroke-width="2"/><circle cx="6" cy="17" r="3" stroke="#28a745" stroke-width="2"/><circle cx="18" cy="15" r="3" stroke="#28a745" stroke-width="2"/></svg>OGG</div>
+                    <div class="format-option" data-value="wma"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 17V5l12-2v12" stroke="#28a745" stroke-width="2"/><circle cx="6" cy="17" r="3" stroke="#28a745" stroke-width="2"/><circle cx="18" cy="15" r="3" stroke="#28a745" stroke-width="2"/></svg>WMA</div>
+                  </div>
+                </div>
+                <div class="format-category">
+                  <div class="category-header">Image Formats</div>
+                  <div class="format-options">
+                    <div class="format-option" data-value="jpg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fd7e14" stroke-width="2"/><circle cx="8" cy="10" r="2" stroke="#fd7e14" stroke-width="2"/><path d="M21 19l-5-5-4 4-3-3-4 4" stroke="#fd7e14" stroke-width="2"/></svg>JPG</div>
+                    <div class="format-option" data-value="jpeg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fd7e14" stroke-width="2"/><circle cx="8" cy="10" r="2" stroke="#fd7e14" stroke-width="2"/><path d="M21 19l-5-5-4 4-3-3-4 4" stroke="#fd7e14" stroke-width="2"/></svg>JPEG</div>
+                    <div class="format-option" data-value="png"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fd7e14" stroke-width="2"/><circle cx="8" cy="10" r="2" stroke="#fd7e14" stroke-width="2"/><path d="M21 19l-5-5-4 4-3-3-4 4" stroke="#fd7e14" stroke-width="2"/></svg>PNG</div>
+                    <div class="format-option" data-value="gif"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fd7e14" stroke-width="2"/><circle cx="8" cy="10" r="2" stroke="#fd7e14" stroke-width="2"/><path d="M21 19l-5-5-4 4-3-3-4 4" stroke="#fd7e14" stroke-width="2"/></svg>GIF</div>
+                    <div class="format-option" data-value="bmp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fd7e14" stroke-width="2"/><circle cx="8" cy="10" r="2" stroke="#fd7e14" stroke-width="2"/><path d="M21 19l-5-5-4 4-3-3-4 4" stroke="#fd7e14" stroke-width="2"/></svg>BMP</div>
+                    <div class="format-option" data-value="tiff"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fd7e14" stroke-width="2"/><circle cx="8" cy="10" r="2" stroke="#fd7e14" stroke-width="2"/><path d="M21 19l-5-5-4 4-3-3-4 4" stroke="#fd7e14" stroke-width="2"/></svg>TIFF</div>
+                    <div class="format-option" data-value="webp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fd7e14" stroke-width="2"/><circle cx="8" cy="10" r="2" stroke="#fd7e14" stroke-width="2"/><path d="M21 19l-5-5-4 4-3-3-4 4" stroke="#fd7e14" stroke-width="2"/></svg>WEBP</div>
+                    <div class="format-option" data-value="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fd7e14" stroke-width="2"/><circle cx="8" cy="10" r="2" stroke="#fd7e14" stroke-width="2"/><path d="M21 19l-5-5-4 4-3-3-4 4" stroke="#fd7e14" stroke-width="2"/></svg>ICO</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="format-category">
-              <div class="category-header">Audio Formats</div>
-              <div class="format-options">
-                <div class="format-option" data-value="mp3">MP3</div>
-                <div class="format-option" data-value="wav">WAV</div>
-                <div class="format-option" data-value="aac">AAC</div>
-                <div class="format-option" data-value="flac">FLAC</div>
-                <div class="format-option" data-value="m4a">M4A</div>
-                <div class="format-option" data-value="opus">OPUS</div>
-                <div class="format-option" data-value="ogg">OGG</div>
-                <div class="format-option" data-value="wma">WMA</div>
-              </div>
-            </div>
-            <div class="format-category">
-              <div class="category-header">Image Formats</div>
-              <div class="format-options">
-                <div class="format-option" data-value="jpg">JPG</div>
-                <div class="format-option" data-value="jpeg">JPEG</div>
-                <div class="format-option" data-value="png">PNG</div>
-                <div class="format-option" data-value="gif">GIF</div>
-                <div class="format-option" data-value="bmp">BMP</div>
-                <div class="format-option" data-value="tiff">TIFF</div>
-                <div class="format-option" data-value="webp">WEBP</div>
-                <div class="format-option" data-value="ico">ICO</div>
-              </div>
-            </div>
+            <input type="hidden" id="extensionSelect" name="extensionSelect" required>
+          </div>
+          <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600">Convert</button>
+        </form>
+        <div id="convertResult" class="hidden mt-4 p-2 bg-gray-200 rounded-lg flex items-center justify-between">
+          <span id="convertedFileLink"></span>
+          <button onclick="copyText('convertedFileLink')" class="px-2 py-1 bg-gray-300 rounded">
+            <svg width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 7V7C14 6.06812 14 5.60218 13.8478 5.23463C13.6448 4.74458 13.2554 4.35523 12.7654 4.15224C12.3978 4 11.9319 4 11 4H8C6.11438 4 5.17157 4 4.58579 4.58579C4 5.17157 4 6.11438 4 8V11C4 11.9319 4 12.3978 4.15224 12.7654C4.35523 13.2554 4.74458 13.6448 5.23463 13.8478C5.60218 14 6.06812 14 7 14V14" stroke="#33363F" stroke-width="2"/>
+              <rect x="10" y="10" width="10" height="10" rx="2" stroke="#33363F" stroke-width="2"/>
+            </svg>
+          </button>
+          <button onclick="downloadConvertedFile()" class="px-2 py-1 bg-green-500 text-white rounded ml-2 hover:bg-green-600">
+            <svg width="24px" height="24px" fill="currentColor" viewBox="0 0 24 24" class="inline-block mr-1" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 16a1 1 0 0 1-1-1V5a1 1 0 1 1 2 0v10a1 1 0 0 1-1 1zm-4.707-3.707a1 1 0 0 1 1.414 0L11 14.586V5a1 1 0 1 1 2 0v9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414z"/>
+              <path d="M5 18a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1z"/>
+            </svg>
+            </svg>
+          </button>
+          <script>
+          function downloadConvertedFile() {
+            const linkElem = document.getElementById('convertedFileLink');
+            if (linkElem && linkElem.textContent) {
+              let url = linkElem.textContent.trim();
+              if (url) {
+                if (url.indexOf('?') === -1) {
+                  url += '?download=true';
+                } else {
+                  url += '&download=true';
+                }
+                window.location.href = url;
+              }
+            }
+          }
+          </script>
+        </div>
+        <div id="convertProgressContainer" class="w-full bg-gray-200 rounded-full h-7 mt-4 hidden">
+          <div id="convertProgress" class="h-7 rounded-full text-center text-white transition-all duration-100 ease-in-out" style="width: 0%;">
+            <span id="convertProgressPercentage" class="font-bold p-0">0%</span>
           </div>
         </div>
-        <input type="hidden" id="extensionSelect" name="extensionSelect" required>
+        <div id="convertEtaContainer" class="hidden mt-2 text-center text-gray-700">
+          <span id="convertEta"></span>
+        </div>
+        <div id="convertStatusContainer" class="hidden mt-2 text-center text-gray-700">
+          <span id="convertStatus"></span>
+        </div>
       </div>
-      <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600">Convert</button>
-    </form>
-    <div id="convertResult" class="hidden mt-4 p-2 bg-gray-200 rounded-lg flex items-center justify-between">
-      <span id="convertedFileLink"></span>
-      <button onclick="copyText('convertedFileLink')" class="px-2 py-1 bg-gray-300 rounded">
-        <svg width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M14 7V7C14 6.06812 14 5.60218 13.8478 5.23463C13.6448 4.74458 13.2554 4.35523 12.7654 4.15224C12.3978 4 11.9319 4 11 4H8C6.11438 4 5.17157 4 4.58579 4.58579C4 5.17157 4 6.11438 4 8V11C4 11.9319 4 12.3978 4.15224 12.7654C4.35523 13.2554 4.74458 13.6448 5.23463 13.8478C5.60218 14 6.06812 14 7 14V14" stroke="#33363F" stroke-width="2"/>
-          <rect x="10" y="10" width="10" height="10" rx="2" stroke="#33363F" stroke-width="2"/>
-        </svg>
-      </button>
-      <button onclick="downloadConvertedFile()" class="px-2 py-1 bg-green-500 text-white rounded ml-2 hover:bg-green-600">
-        <svg width="24px" height="24px" fill="currentColor" viewBox="0 0 24 24" class="inline-block mr-1" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 16a1 1 0 0 1-1-1V5a1 1 0 1 1 2 0v10a1 1 0 0 1-1 1zm-4.707-3.707a1 1 0 0 1 1.414 0L11 14.586V5a1 1 0 1 1 2 0v9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414z"/>
-          <path d="M5 18a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1z"/>
-        </svg>
-        </svg>
-      </button>
-      <script>
-      function downloadConvertedFile() {
-        const linkElem = document.getElementById('convertedFileLink');
-        if (linkElem && linkElem.textContent) {
-          let url = linkElem.textContent.trim();
-          if (url) {
-            if (url.indexOf('?') === -1) {
-              url += '?download=true';
-            } else {
-              url += '&download=true';
-            }
-            window.location.href = url;
-          }
-        }
-      }
-      </script>
-    </div>
-    <div id="convertProgressContainer" class="w-full bg-gray-200 rounded-full h-7 mt-4 hidden">
-      <div id="convertProgress" class="h-7 rounded-full text-center text-white transition-all duration-100 ease-in-out" style="width: 0%;">
-        <span id="convertProgressPercentage" class="font-bold p-0">0%</span>
-      </div>
-    </div>
-    <div id="convertEtaContainer" class="hidden mt-2 text-center text-gray-700">
-      <span id="convertEta"></span>
-    </div>
-    <div id="convertStatusContainer" class="hidden mt-2 text-center text-gray-700">
-      <span id="convertStatus"></span>
     </div>
   </div>
   <div id="footer" class="">
@@ -421,7 +429,8 @@
       <p>&copy; 2025 - Present jesn.zip. All rights reserved.</p>
       <p>
       <a href="https://astroid.cc/imprint" class="text-blue-400 hover:underline">Imprint</a> | 
-      <a href="/privacy.html" class="text-blue-400 hover:underline">Privacy Policy</a>
+      <a href="/privacy.html" class="text-blue-400 hover:underline">Privacy Policy</a> |
+      <a href="https://uiverse.io/Yaya12085/yellow-goat-62" class="text-blue-400 hover:underline">File upload design</a>
       </p>
     </div>
     </div>
