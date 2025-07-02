@@ -10,6 +10,7 @@ This project began as a personal tool for shortening links and sharing files. Af
 ### Features
 - **File Uploads**: Upload files up to 500MB each, with no limit on the number of files. (Around 20GB of storage on my server available)
 - **Link Shortening**: Supports long URLs. If you encounter any issues, feel free to reach out to me on Discord (deutscher775), and I'll address them promptly.
+- **File Converting**: Supports up to 500MB of every common files you want to convert. Converting on my server with ffmpeg.
 
 ### License
 This project is licensed under the MIT License. You are free to use, modify, and distribute it as you wish, but please include the original license in any copies or substantial portions of the software.
