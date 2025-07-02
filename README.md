@@ -19,7 +19,7 @@ This project is licensed under the MIT License. You are free to use, modify, and
 If you would like to contribute to this project, please feel free to submit a pull request or open an issue. I welcome any feedback or suggestions for improvement.
 
 ### Contact
-If you have any questions or need assistance, please reach out to me on Discord (deutscher775) or via email (mail@deutscher775.de).
+If you have any questions or need assistance, please reach out to me on Discord (jesn.zip) or via email (mail@deutscher775.de).
 
 ### Copyright
 Copyright (c) 2025 - Present by Deutscher 775 (https://deutscher775.de). All rights reserved.
