@@ -1,7 +1,107 @@
 let justOpenedFormatMenu = false;
+let userLoggedIn = false;
+
+// Individual Element Loaders
+function hideElementLoader(loaderId, contentId, delay = 0) {
+	setTimeout(() => {
+		const loader = document.getElementById(loaderId);
+		const content = document.getElementById(contentId);
+		
+		if (loader) {
+			loader.classList.add('fade-out-loader');
+			setTimeout(() => {
+				loader.style.display = 'none';
+			}, 300);
+		}
+		
+		if (content) {
+			content.classList.remove('hidden');
+		}
+	}, delay);
+}
+
+function showAllContent() {
+	// Show URL Shortener
+	hideElementLoader('urlShortenerLoader', 'urlShortenerContent', 200);
+	
+	// Show File Sharing
+	hideElementLoader('fileSharingLoader', 'fileSharingContent', 400);
+	
+	// Show File Converter
+	hideElementLoader('fileConverterLoader', 'fileConverterContent', 600);
+}
+
+// Async function to get free storage
+async function getFreeStorage() {
+    try {
+        const response = await fetch("/misc/storage", {
+            method: "GET",
+            headers: {
+                "Authorization": localStorage.getItem("session")
+            }
+        });
+        const data = await response.json();
+        if (data.free_gb !== undefined) {
+            return data.free_gb;
+        }
+        return "Unknown";
+    } catch (error) {
+        console.error("Error fetching storage info:", error);
+        return "Unknown";
+    }
+}
 
 window.onload = function () {
 	console.log("Initializing page...");
+	
+	// Show content with staggered animation
+	showAllContent();
+	
+	console.log("Checking user session...");
+	if (localStorage.getItem("session")) {
+		console.log("User is logged in.");
+		document.getElementById("showLoginBtn").textContent = "Account";
+		document.getElementById("showLoginBtn").onclick = function () {
+			window.location.href = "/user/account";
+		};
+		let session = localStorage.getItem("session");
+		let xhr = new XMLHttpRequest();
+		xhr.open("GET", "/user/auth", true);
+		xhr.setRequestHeader("Authorization", session);
+		xhr.onload = async function () {
+			if (xhr.status === 200) {
+				userLoggedIn = true;
+				// Don't show the permanent upload checkbox anymore, we use popup instead
+				// document.getElementById("permanentUploadContainer").classList.remove("hidden");
+				document.getElementById("convertPermanentContainer").classList.remove("hidden");
+				
+				// Get free storage asynchronously
+				const free_gb = await getFreeStorage();
+				console.log("Free storage:", free_gb, "GB");
+				const to_add_string = `(${free_gb} GB available)`;
+				
+				// Correctly select the label elements within the containers
+				const convertLabel = document.getElementById("convertPermanentContainer").querySelector("label[for='convertPermanent']");
+				const uploadLabel = document.getElementById("permanentUploadContainer").querySelector("label[for='permanentUpload']");
+				
+				if (convertLabel) {
+					convertLabel.textContent = "Save converted file permanently " + to_add_string;
+				}
+				
+				if (uploadLabel) {
+					uploadLabel.textContent = "Save file permanently " + to_add_string;
+				}
+				
+				getUserFiles();
+				console.log("User is authenticated.");
+			} else {
+				console.log("User is not authenticated.");
+				userLoggedIn = false;
+				window.location.href = "/user/logout";
+			}
+		};
+		xhr.send();
+	}
 
 	document
 		.getElementById("copyshortenedsvg")
@@ -146,12 +246,14 @@ function setupContainerDragAndDrop(container, input, labelId, autoUpload) {
 			const file = files[0];
 			console.log("File:", file.name, "Size:", file.size, "Type:", file.type);
 			if (file.size <= 0) {
-				return raiseError("*crickets*", "Seems like you dropped an empty file. Please upload a non-empty file.");
-			}
-			else if (file.size > 500 * 1024 * 1024) {
+				return raiseError(
+					"*crickets*",
+					"Seems like you dropped an empty file. Please upload a non-empty file."
+				);
+			} else if (file.size > 1000 * 1024 * 1024) {
 				return raiseError(
 					"File too large",
-					"Please upload files smaller than 100 MB."
+					"Please upload files smaller than 1 GB."
 				);
 			}
 
@@ -198,17 +300,36 @@ function setupContainerDragAndDrop(container, input, labelId, autoUpload) {
 	});
 }
 
-// Fallback-Upload-Funktion mit File-Objekt
-function uploadFileWithFile(file) {
-	console.log("Uploading file directly:", file.name);
+// Hilfsfunktion für Authorization-Header
+function setAuthHeader(xhr) {
+	const session = localStorage.getItem("session");
+	if (session) {
+		xhr.setRequestHeader("Authorization", session);
+	}
+}
 
+// Upload-Request
+function uploadFile() {
+	var fileInput = document.getElementById("fileUpload");
+	var file = fileInput.files[0];
+	
+	// If user is logged in, show permanent upload popup
+	if (userLoggedIn) {
+		pendingUpload = file;
+		showPermanentUploadPopup();
+		return;
+	}
+	
+	// If not logged in, proceed with temporary upload
 	var formData = new FormData();
 	formData.append("file", file);
-
 	document.getElementById("uploadProgressContainer").classList.remove("hidden");
-
+	document.getElementById("uploadProgress").style.width = "0%";
+	document.getElementById("uploadProgressPercentage").innerHTML = "0%";
+	document.getElementById("estTime").innerText = "";
 	var xhr = new XMLHttpRequest();
 	xhr.open("POST", "/api/upload", true);
+	setAuthHeader(xhr);
 
 	xhr.upload.onprogress = function (event) {
 		if (event.lengthComputable) {
@@ -216,10 +337,10 @@ function uploadFileWithFile(file) {
 			if (!xhr.upload.startTime) {
 				xhr.upload.startTime = event.timeStamp;
 			}
-			var timeElapsed = (event.timeStamp - xhr.upload.startTime) / 1000;
-			var speed = (event.loaded * 8) / (timeElapsed * 1024 * 1024);
+			var timeElapsed = (event.timeStamp - xhr.upload.startTime) / 1000; // time in seconds
+			var speed = (event.loaded * 8) / (timeElapsed * 1024 * 1024); // speed in Mbit/s
 			var estimatedTime =
-				(event.total - event.loaded) / (event.loaded / timeElapsed);
+				(event.total - event.loaded) / (event.loaded / timeElapsed); // estimated time in seconds
 
 			var timeDisplay;
 			if (estimatedTime < 60) {
@@ -230,6 +351,14 @@ function uploadFileWithFile(file) {
 				timeDisplay = (estimatedTime / 3600).toFixed(2) + " hours";
 			}
 
+			console.debug(
+				"Speed: " +
+					speed.toFixed(1) +
+					" Mbit/s | Time elapsed: " +
+					timeElapsed +
+					" s | Estimated time: " +
+					timeDisplay
+			);
 			document.getElementById("uploadProgress").style.width =
 				percentComplete + "%";
 			document.getElementById("uploadProgressPercentage").innerHTML =
@@ -241,6 +370,7 @@ function uploadFileWithFile(file) {
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState == 4) {
 			if (xhr.status == 201) {
+
 				var response = JSON.parse(xhr.responseText);
 				document.getElementById("fileUrlContainer").classList.remove("hidden");
 				document.getElementById("fileurl").innerText = response.url;
@@ -256,6 +386,9 @@ function uploadFileWithFile(file) {
 				document
 					.getElementById("uploadProgressContainer")
 					.classList.add("hidden");
+				if (userLoggedIn) {
+					getUserFiles();
+				}
 			} else {
 				raiseError(
 					"Upload failed",
@@ -361,30 +494,118 @@ function copyText(id) {
 }
 
 function raiseError(title, message) {
+	// Define error sounds with optional probability weights
+	let errorsounds = [
+		{ file: "Error 1.mp3", weight: 100 },
+		{ file: "Error 2.mp3", weight: 10 },
+		{ file: "Error 3.mp3", weight: 100 },
+		{ file: "Error 4.mp3", weight: 100 },
+		{ file: "Error 5.mp3", weight: 50 },
+		{ file: "Error 6.mp3", weight: 30 },
+		{ file: "Error 7.mp3", weight: 30 },
+		{ file: "Error 8.mp3", weight: 4 },
+		{ file: "Error 9.mp3", weight: 8 },
+		{ file: "Error 10.mp3", weight: 10 },
+	];
+	// You can adjust the 'weight' property to change the probability for each sound
+	// For example, to make "Error 2.mp3" twice as likely:
+	// errorsounds[1].weight = 2;
+
+	// Build a weighted array for random selection
+	let weighted = [];
+	errorsounds.forEach((s, i) => {
+		for (let j = 0; j < s.weight; j++) weighted.push(i);
+	});
+	let soundIndex = weighted[Math.floor(Math.random() * weighted.length)];
+	let soundUrl = "/webinterface/" + errorsounds[soundIndex].file;
+	let audio = new Audio(soundUrl);
+	audio.volume = 0.3; // Set volume to 30%
+	audio.play().catch((err) => {
+		console.error("Failed to play error sound:", err);
+		// Fallback: Zeige Popup ohne Sound
+	});
 	console.error(title + ": " + message);
 	if (!title || !message) {
 		console.error("Error: Title or message is missing.");
 		document.getElementById("popup").classList.remove("hidden");
+		document.getElementById("popup").classList.add("show");
+		setTimeout(() => {
+			document.querySelector(".popup-content").style.transform = "scale(1)";
+			document.querySelector(".popup-content").style.opacity = "1";
+		}, 10);
 	} else {
 		document.getElementById("popup").classList.remove("hidden");
+		document.getElementById("popup").classList.add("show");
 		document.getElementById("err.message").innerText = message;
 		document.getElementById("err.title").innerText = title;
+		setTimeout(() => {
+			document.querySelector(".popup-content").style.transform = "scale(1)";
+			document.querySelector(".popup-content").style.opacity = "1";
+		}, 10);
 	}
 }
 
 function closePopup() {
-	document.getElementById("popup").classList.add("hidden");
+	document.getElementById("popup").classList.remove("show");
+	document.querySelector(".popup-content").style.transform = "scale(0.8)";
+	document.querySelector(".popup-content").style.opacity = "0";
+	setTimeout(() => {
+		document.getElementById("popup").classList.add("hidden");
+	}, 250); // Warte auf die CSS-Transition
 }
 
-function uploadFile() {
-	var fileInput = document.getElementById("fileUpload");
-	var file = fileInput.files[0];
+// Global variable to store pending upload state
+let pendingUpload = null;
+
+function showPermanentUploadPopup() {
+	const popup = document.getElementById("permanentUploadPopup");
+	popup.classList.remove("hidden");
+	popup.classList.add("show");
+	setTimeout(() => {
+		const content = popup.querySelector(".popup-content");
+		if (content) {
+			content.style.transform = "scale(1)";
+			content.style.opacity = "1";
+		}
+	}, 10);
+}
+
+function closePermanentUploadPopup() {
+	const popup = document.getElementById("permanentUploadPopup");
+	popup.classList.remove("show");
+	const content = popup.querySelector(".popup-content");
+	if (content) {
+		content.style.transform = "scale(0.8)";
+		content.style.opacity = "0";
+	}
+	setTimeout(() => {
+		popup.classList.add("hidden");
+	}, 250);
+}
+
+function confirmPermanentUpload(isPermanent) {
+	closePermanentUploadPopup();
+	
+	if (pendingUpload) {
+		// Proceed with the upload using the stored file
+		proceedWithUpload(pendingUpload, isPermanent);
+		pendingUpload = null;
+	}
+}
+
+function proceedWithUpload(file, isPermanent) {
 	var formData = new FormData();
+	if (isPermanent) {
+		formData.append("permanent", "true");
+	}
 	formData.append("file", file);
 	document.getElementById("uploadProgressContainer").classList.remove("hidden");
-	document.getElementById("");
+	document.getElementById("uploadProgress").style.width = "0%";
+	document.getElementById("uploadProgressPercentage").innerHTML = "0%";
+	document.getElementById("estTime").innerText = "";
 	var xhr = new XMLHttpRequest();
 	xhr.open("POST", "/api/upload", true);
+	setAuthHeader(xhr);
 
 	xhr.upload.onprogress = function (event) {
 		if (event.lengthComputable) {
@@ -425,6 +646,7 @@ function uploadFile() {
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState == 4) {
 			if (xhr.status == 201) {
+
 				var response = JSON.parse(xhr.responseText);
 				document.getElementById("fileUrlContainer").classList.remove("hidden");
 				document.getElementById("fileurl").innerText = response.url;
@@ -440,11 +662,17 @@ function uploadFile() {
 				document
 					.getElementById("uploadProgressContainer")
 					.classList.add("hidden");
+				if (userLoggedIn) {
+					getUserFiles();
+				}
 			} else {
 				raiseError(
-					"We've lost your package!",
+					"Upload failed",
 					"Failed to upload file. Status: " + xhr.status
 				);
+				document
+					.getElementById("uploadProgressContainer")
+					.classList.add("hidden");
 			}
 		}
 	};
@@ -471,11 +699,13 @@ function convertFile(event) {
 	formData.append("output_ext", outputExt);
 	formData.append("origin", window.origin);
 	formData.append("file", file);
+	// Permanent-Checkbox prüfen und Wert mitsenden
+	if (userLoggedIn && document.getElementById("convertPermanent").checked) {
+		formData.append("permanent", "true");
+	}
 
 	// Fortschrittsanzeige anzeigen
-	document
-		.getElementById("convertProgressContainer")
-		.classList.remove("hidden");
+	document.getElementById("convertProgressContainer").classList.remove("hidden");
 	document.getElementById("convertEtaContainer").classList.remove("hidden");
 	document.getElementById("convertStatusContainer").classList.remove("hidden");
 	document.getElementById("convertStatus").innerText = "Uploading file...";
@@ -483,26 +713,23 @@ function convertFile(event) {
 
 	var xhr = new XMLHttpRequest();
 	xhr.open("POST", "/api/convert", true);
+	setAuthHeader(xhr);
 
 	xhr.upload.startTime = null;
-
 	document.getElementById("convertProgress").classList.add("bg-blue-500");
 
 	xhr.upload.onprogress = function (event) {
 		if (event.lengthComputable) {
 			var percentComplete = (event.loaded / event.total) * 100;
-			document.getElementById("convertProgress").style.width =
-				percentComplete + "%";
-			document.getElementById("convertProgressPercentage").innerHTML =
-				Math.round(percentComplete) + "%";
+			document.getElementById("convertProgress").style.width = percentComplete + "%";
+			document.getElementById("convertProgressPercentage").innerHTML = Math.round(percentComplete) + "%";
 
 			if (!xhr.upload.startTime) {
 				xhr.upload.startTime = event.timeStamp;
 			}
 			var timeElapsed = (event.timeStamp - xhr.upload.startTime) / 1000; // Sekunden
 			var speed = (event.loaded * 8) / (timeElapsed * 1024 * 1024); // Mbit/s
-			var estimatedTime =
-				(event.total - event.loaded) / (event.loaded / timeElapsed); // Sekunden
+			var estimatedTime = (event.total - event.loaded) / (event.loaded / timeElapsed); // Sekunden
 
 			var timeDisplay;
 			if (estimatedTime < 60) {
@@ -512,8 +739,7 @@ function convertFile(event) {
 			} else {
 				timeDisplay = (estimatedTime / 3600).toFixed(2) + " hours";
 			}
-			document.getElementById("convertEta").innerText =
-				"Estimated: " + timeDisplay;
+			document.getElementById("convertEta").innerText = "Estimated: " + timeDisplay;
 		}
 	};
 
@@ -527,24 +753,16 @@ function convertFile(event) {
 			} else {
 				document.getElementById("convertStatus").innerText = "";
 				document.getElementById("convertEta").innerText = "";
-				document
-					.getElementById("convertProgress")
-					.classList.remove("bg-green-500");
+				document.getElementById("convertProgress").classList.remove("bg-green-500");
 				document.getElementById("convertProgress").classList.add("bg-blue-500");
-				raiseError(
-					"Conversion failed",
-					"Failed to convert file. Status: " + xhr.status
-				);
+				raiseError("Conversion failed", "Failed to convert file. Status: " + xhr.status);
 			}
 		} else if (xhr.readyState == 2) {
-			// Upload abgeschlossen, Konvertierung startet
 			document.getElementById("convertStatus").innerText = "Converting...";
 			document.getElementById("convertEta").innerText = "";
 			document.getElementById("convertProgress").style.width = "0%";
 			document.getElementById("convertProgressPercentage").innerHTML = "0%";
-			document
-				.getElementById("convertProgress")
-				.classList.remove("bg-blue-500");
+			document.getElementById("convertProgress").classList.remove("bg-blue-500");
 			document.getElementById("convertProgress").classList.add("bg-green-500");
 		}
 	};
@@ -594,6 +812,8 @@ function listenForConversionProgress(sharePath) {
 			document.getElementById("convertProgress").classList.add("bg-green-500");
 			document.getElementById("convertProgress").style.width = "100%";
 			document.getElementById("convertProgressPercentage").innerHTML = "100%";
+			if (userLoggedIn){
+			getUserFiles();}
 			// Link anzeigen
 			console.log(data);
 			if (data.share_path) {
@@ -621,21 +841,28 @@ function listenForConversionProgress(sharePath) {
 	};
 }
 
-// Fallback-Funktion für direkten Upload mit File-Objekt
+// Fallback-Upload-Funktion mit File-Objekt
 function uploadFileWithFile(file) {
 	if (!file) {
 		console.error("No file provided to uploadFileWithFile");
 		return;
 	}
-
 	console.log("Using fallback upload method with file:", file.name);
-
+	
+	// If user is logged in, show permanent upload popup
+	if (userLoggedIn) {
+		pendingUpload = file;
+		showPermanentUploadPopup();
+		return;
+	}
+	
+	// If not logged in, proceed with temporary upload
 	var formData = new FormData();
 	formData.append("file", file);
 	document.getElementById("uploadProgressContainer").classList.remove("hidden");
-
 	var xhr = new XMLHttpRequest();
 	xhr.open("POST", "/api/upload", true);
+	setAuthHeader(xhr);
 
 	xhr.upload.onprogress = function (event) {
 		if (event.lengthComputable) {
@@ -701,6 +928,9 @@ function uploadFileWithFile(file) {
 	};
 
 	xhr.send(formData);
+	if (userLoggedIn) {
+		getUserFiles();
+	}
 }
 
 // Format-Menü-Funktionen
@@ -735,7 +965,6 @@ function initializeFormatMenu() {
 			selectFormat(this.dataset.value, this.textContent);
 		});
 	});
-
 
 	// Click außerhalb des Menüs schließt es
 	document.addEventListener("click", function (e) {
@@ -818,4 +1047,137 @@ function selectFormat(value, text) {
 
 	// Close menu
 	closeFormatMenu();
+}
+
+function getUserFiles() {
+	// Liefert jetzt ein Promise, bleibt rückwärtskompatibel für bestehende Aufrufer
+	if (!userLoggedIn || !localStorage.getItem("session")) {
+		raiseError("Not logged in", "You must be logged in to view your files.");
+		return Promise.resolve(false);
+	}
+	return new Promise((resolve) => {
+		let xhr = new XMLHttpRequest();
+		xhr.open("GET", "/user/files", true);
+		setAuthHeader(xhr);
+		xhr.onload = function () {
+			if (xhr.status === 200) {
+				try {
+					const resp = JSON.parse(xhr.responseText);
+					const list = document.getElementById("fileList");
+					const loader = document.getElementById("sidebarLoader");
+					
+					// Hide loader and show file list
+					if (loader) {
+						loader.classList.add('fade-out-loader');
+						setTimeout(() => {
+							loader.style.display = 'none';
+						}, 300);
+					}
+					
+					if (list) {
+						list.classList.remove('hidden');
+						list.innerHTML = "";
+					}
+					
+					// Liste vor dem Auffüllen optional leeren, um Doppelten zu vermeiden
+					if (list) list.innerHTML = "";
+					for (const file of resp.files) {
+						let fileItem = document.createElement("div");
+						fileItem.className = "file-item";
+						let filename = file.filename
+						if (filename.length > 50) {
+							filename = filename.slice(0, 48) + "..";
+						}
+						fileItem.innerHTML = `<a href="${file.share_url}" target="_blank">${filename}</a>`;
+						fileItem.classList.add("fileLi");
+						let expiresInElement = document.createElement("p");
+						expiresInElement.className = "expiresIn";
+						if (file.expireAt) {
+							let expiresAt;
+							if (typeof file.expireAt === "number" || /^[0-9]+$/.test(file.expireAt)) {
+								// Timestamp in Sekunden oder als String
+								expiresAt = new Date(Number(file.expireAt) * 1000);
+							} else {
+								// ISO-String oder anderes Format
+								expiresAt = new Date(file.expireAt);
+							}
+							let now = new Date();
+							let timeDiff = expiresAt - now;
+							console.log("File:", file.filename, "ExpireAt:", file.expireAt, "TimeDiff:", timeDiff);
+							if (file.expireAt == "NULL"){
+								expiresInElement.textContent = "Expires never";
+							} else if (isNaN(timeDiff)) {
+								expiresInElement.textContent = "Invalid expiration date";
+							}
+							else if (timeDiff <= 0) {
+								expiresInElement.textContent = "Expired";
+							} else {
+								const msPerMinute = 1000 * 60;
+								const msPerHour = msPerMinute * 60;
+								const msPerDay = msPerHour * 24;
+								const msPerWeek = msPerDay * 7;
+								const msPerMonth = msPerDay * 30; // Approximate month as 30 days
+
+								if (timeDiff >= msPerMonth) {
+									const months = Math.floor(timeDiff / msPerMonth);
+									expiresInElement.textContent = `Expires in ${months} month${months > 1 ? 's' : ''}`;
+								} else if (timeDiff >= msPerWeek) {
+									const weeks = Math.floor(timeDiff / msPerWeek);
+									expiresInElement.textContent = `Expires in ${weeks} week${weeks > 1 ? 's' : ''}`;
+								} else if (timeDiff >= msPerDay) {
+									const days = Math.floor(timeDiff / msPerDay);
+									expiresInElement.textContent = `Expires in ${days} day${days > 1 ? 's' : ''}`;
+								} else if (timeDiff >= msPerHour) {
+									const hours = Math.floor(timeDiff / msPerHour);
+									expiresInElement.textContent = `Expires in ${hours} hour${hours > 1 ? 's' : ''}`;
+								} else if (timeDiff >= msPerMinute) {
+									const minutes = Math.floor(timeDiff / msPerMinute);
+									expiresInElement.textContent = `Expires in ${minutes} minute${minutes > 1 ? 's' : ''}`;
+								} else {
+									expiresInElement.textContent = "Expires soon";
+								}
+							}
+						} else {
+							expiresInElement.textContent = "Permanent";
+						}
+						fileItem.appendChild(expiresInElement);
+						document.getElementById("fileList").appendChild(fileItem);
+					}
+					resolve(true);
+				} catch (e) {
+					console.error("Failed to parse files response", e);
+					resolve(false);
+				}
+			} else {
+				console.error("Failed to retrieve user files");
+				resolve(false);
+			}
+		};
+		xhr.onerror = function () { resolve(false); };
+		xhr.send();
+	});
+}
+
+function removeSelectedFile(contextTarget) {
+	if (contextTarget) {
+		contextTarget.classList.add("opacity-50");
+		const fileUrl = contextTarget.querySelector("a").href;
+		console.log("Removing file:", fileUrl);
+		let xhr = new XMLHttpRequest();
+		xhr.open("DELETE", "/user/files", true);
+		xhr.setRequestHeader("Content-Type", "application/json");
+		setAuthHeader(xhr);
+		xhr.send(JSON.stringify({ share_url: fileUrl }));
+		xhr.onload = function () {
+			if (xhr.status === 200) {
+				console.log("File removed successfully");
+				contextTarget.remove();
+				document.getElementById("fileContextMenu").classList.add("hidden");
+			} else {
+				raiseError("Failed to remove file", "Status: " + xhr.status);
+			}
+		};
+	} else {
+		raiseError("No file selected", "Please select a file to remove.");
+	}
 }

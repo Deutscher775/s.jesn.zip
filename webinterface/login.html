@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - jesn.zip</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<style>
+  .popup-content {
+    transform: scale(0.8);
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(.4,2,.6,1), opacity 0.25s;
+  }
+  .popup.show .popup-content {
+    transform: scale(1);
+    opacity: 1;
+  }
+</style>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+  <div class="popup fixed inset-0 flex items-center justify-center hidden" id="popup">
+    <div class="rounded-lg border border-red-800 bg-gray-800 max-w-md shadow-lg p-6 popup-content" role="alert">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="rounded-full p-2 bg-red-900/30">
+          <svg width="28" height="28" fill="#ef4444" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 7h2v7h-2zm0 8h2v2h-2z"/><path d="m21.707 7.293-5-5A.996.996 0 0 0 16 2H8a.996.996 0 0 0-.707.293l-5 5A.996.996 0 0 0 2 8v8c0 .266.105.52.293.707l5 5A.996.996 0 0 0 8 22h8c.266 0 .52-.105.707-.293l5-5A.996.996 0 0 0 22 16V8a.996.996 0 0 0-.293-.707zM20 15.586 15.586 20H8.414L4 15.586V8.414L8.414 4h7.172L20 8.414v7.172z"/></svg>
+        </span>
+        <p class="font-semibold text-white" id="err.title">Login failed</p>
+      </div>
+      <p class="text-gray-300 mb-4" id="err.message">Username or password is incorrect.</p>
+      <button onclick="closePopup()" class="w-full px-4 py-2 rounded-lg font-medium text-white transition-colors" style="background-color:#fc03cf">Close</button>
+    </div>
+  </div>
+  <div class="w-full max-w-md p-6 bg-gray-800 border border-gray-700 shadow-lg rounded-lg mt-12">
+    <div class="flex flex-col items-center mb-4">
+  <svg fill="#fc03cf" width="72" height="72" viewBox="0 0 14 14" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="m 10.25,7.00001 q 0,0.20313 -0.14844,0.35156 l -4.25,4.25 Q 5.70312,11.75001 5.5,11.75001 q -0.20312,0 -0.35156,-0.14844 Q 5,11.45313 5,11.25001 v -2.25 H 1.5 q -0.203125,0 -0.351563,-0.14844 Q 1,8.70314 1,8.50001 v -3 Q 1,5.29689 1.148437,5.14845 1.296875,5.00001 1.5,5.00001 H 5 v -2.25 Z"/></svg>
+      <h2 class="text-2xl font-bold text-center mt-2">Login</h2>
+    </div>
+    <form id="loginForm" class="flex flex-col gap-4" onsubmit="login(event)">
+      <input id="username" name="username" type="text" placeholder="Username" class="p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-pink-500" required autofocus style="--tw-ring-color:#fc03cf;">
+      <input id="password" name="password" type="password" placeholder="Password" class="p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-pink-500" required style="--tw-ring-color:#fc03cf;">
+      <button type="submit" class="px-4 py-3 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors" style="background-color:#fc03cf;">Login</button>
+    </form>
+    <div class="mt-4 text-center text-gray-400 text-sm">
+      Don't have an account? <a id="register_ref" href="/user/signup" class="hover:underline" style="color:#fc03cf;">Register</a>
+    </div>
+  </div>
+  <div class="mt-12 w-full max-w-6xl mx-auto">
+    <div class="flex justify-center mb-5">
+      <a href="https://github.com/deutscher775/s.jesn.zip" target="_blank" class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors duration-200 group">
+        <div class="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 border border-gray-700 transition-colors duration-200">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.461-1.11-1.461-.908-.62.069-.608.069-.608 1.004.07 1.532 1.032 1.532 1.032.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.983 1.03-2.682-.103-.253-.446-1.27.098-2.645 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.91-1.296 2.75-1.026 2.75-1.026.544 1.375.201 2.392.099 2.645.64.699 1.03 1.591 1.03 2.682 0 3.842-2.337 4.687-4.565 4.936.36.31.682.92.682 1.852 0 1.338-.012 2.419-.012 2.747 0 .267.18.578.688.48A10.013 10.013 0 0 0 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+        </div>
+        <span class="font-medium">View on GitHub</span>
+      </a>
+    </div>
+    <div class="text-center text-gray-500 text-xs space-y-2 pb-6">
+      <p class="font-medium">&copy; 2026 - Present jesn.zip. All rights reserved.</p>
+      <p class="flex justify-center gap-5 flex-wrap">
+        <a href="https://astroid.cc/imprint" class="hover:text-white transition-colors hover:underline" style="color: #fc03cf;">Imprint</a>
+        <a href="/privacy.html" class="hover:text-white transition-colors hover:underline" style="color: #fc03cf;">Privacy Policy</a>
+      </p>
+    </div>
+  </div>
+  <script>
+    function getLoginPasswordParam() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('login_password');
+    }
+    if (getLoginPasswordParam()) {
+      document.getElementById('register_ref').href = `/user/signup?login_password=${encodeURIComponent(getLoginPasswordParam())}`;
+    }
+    function closePopup() {
+      document.getElementById('popup').classList.remove('show');
+      document.querySelector('.popup-content').style.transform = 'scale(0.8)';
+      document.querySelector('.popup-content').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('popup').classList.add('hidden');
+      }, 250); // Warte auf die CSS-Transition
+    }
+    async function login(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const loginPassword = getLoginPasswordParam();
+      let url = '/user/login';
+      if (loginPassword) {
+        url += '?login_password=' + encodeURIComponent(loginPassword);
+      }
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (res.ok && data.session_key) {
+          localStorage.setItem('session', data.session_key);
+          let redirectUrl = '/create';
+          window.location.href = redirectUrl;
+        } else {
+          showError(data.error || 'Login failed');
+        }
+      } catch (e) {
+        showError('Server not reachable');
+      }
+    }
+    function showError(msg) {
+      document.getElementById('err.title').textContent = 'Login failed';
+      document.getElementById('err.message').textContent = msg;
+      document.getElementById('popup').classList.remove('hidden');
+      document.getElementById('popup').classList.add('show');
+      setTimeout(() => {
+        document.querySelector('.popup-content').style.transform = 'scale(1)';
+        document.querySelector('.popup-content').style.opacity = '1';
+      }, 10);
+      setTimeout(() => closePopup(), 4000);
+    }
+  </script>
+</body>
+</html>

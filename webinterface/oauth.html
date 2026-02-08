@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autorisierung - s.jesn.zip</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700/50">
+        <!-- Login Required Section -->
+        <div id="login-required" class="hidden">
+            <div class="flex flex-col items-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">Anmeldung erforderlich</h1>
+                <p class="text-gray-400 text-center mb-4">Bitte melden Sie sich an, um fortzufahren</p>
+                <div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4 mb-6 w-full">
+                    <p class="text-sm text-gray-400 mb-2">App:</p>
+                    <p class="text-white font-semibold mb-3" id="app-name-login">Loading...</p>
+                    <p class="text-xs text-gray-500">Nach der Anmeldung werden Sie zur Autorisierung weitergeleitet</p>
+                </div>
+            </div>
+            <a href="/user/login?login_password=L347" id="login-link"
+               class="w-full block px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 font-semibold shadow-lg text-center">
+                Zur Anmeldung
+            </a>
+        </div>
+
+        <!-- Authorization Section -->
+        <div id="authorize-section" class="hidden">
+            <div class="flex flex-col items-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">Autorisierung</h1>
+                <p class="text-gray-400 text-center">Eine Anwendung möchte auf Ihr Konto zugreifen</p>
+            </div>
+
+            <div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-6 mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-white font-semibold" id="app-name">Application Name</p>
+                        <p class="text-sm text-gray-400">möchte autorisiert werden</p>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-700/50 pt-4">
+                    <p class="text-sm text-gray-400 mb-2">Autorisierungscode:</p>
+                    <p class="text-lg font-mono text-blue-400 bg-gray-900/50 rounded-lg p-3 break-all" id="auth-code">Loading...</p>
+                </div>
+            </div>
+
+            <div id="error-message" class="hidden mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm"></div>
+
+            <button id="authorize-btn" 
+                    class="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl hover:from-green-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 font-semibold shadow-lg mb-3">
+                Autorisieren
+            </button>
+            
+            <button id="cancel-btn" 
+                    class="w-full px-6 py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600 transition-all duration-200 font-semibold">
+                Abbrechen
+            </button>
+        </div>
+
+        <!-- Loading Section -->
+        <div id="loading-section">
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p class="text-gray-400">Laden...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authCode = null;
+        let appName = null;
+        let redirectUri = null;
+        let loginCheckInterval = null;
+
+        async function checkLogin() {
+            // Prüfe zuerst session, dann authToken
+            const sessionKey = localStorage.getItem("session");
+            const authToken = localStorage.getItem("authToken");
+            const token = sessionKey || authToken;
+            
+            if (!token) return false;
+            
+            try {
+                const response = await fetch("/user/auth", {
+                    headers: { "Authorization": token }
+                });
+                return response.ok;
+            } catch (error) {
+                console.error("Auth check failed:", error);
+                return false;
+            }
+        }
+
+        function startLoginPolling() {
+            // Prüfe alle 2 Sekunden, ob der User sich angemeldet hat
+            if (loginCheckInterval) clearInterval(loginCheckInterval);
+            
+            loginCheckInterval = setInterval(async () => {
+                const isLoggedIn = await checkLogin();
+                if (isLoggedIn) {
+                    clearInterval(loginCheckInterval);
+                    // Lade die Seite neu, damit sie den autorisierten Status anzeigt
+                    window.location.reload();
+                }
+            }, 2000);
+        }
+
+        async function authorize() {
+            // Prüfe zuerst session, dann authToken
+            const sessionKey = localStorage.getItem("session");
+            const authToken = localStorage.getItem("authToken");
+            const token = sessionKey || authToken;
+            
+            if (!token) {
+                showError("Nicht angemeldet");
+                return;
+            }
+
+            try {
+                const btn = document.getElementById("authorize-btn");
+                btn.disabled = true;
+                btn.textContent = "Autorisiere...";
+
+                const response = await fetch("/api/oauth/authorize", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": token,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ code: authCode })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    sessionStorage.removeItem("oauth_pending");
+                    window.location.href = data.redirect_url;
+                } else {
+                    const error = await response.json();
+                    showError(error.error || "Autorisierung fehlgeschlagen");
+                    btn.disabled = false;
+                    btn.textContent = "Autorisieren";
+                }
+            } catch (error) {
+                console.error("Authorization failed:", error);
+                showError("Verbindungsfehler");
+                const btn = document.getElementById("authorize-btn");
+                btn.disabled = false;
+                btn.textContent = "Autorisieren";
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById("error-message");
+            errorDiv.textContent = message;
+            errorDiv.classList.remove("hidden");
+        }
+
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            authCode = urlParams.get('code');
+            appName = urlParams.get('app') || 'Unknown Application';
+            redirectUri = urlParams.get('redirect_uri');
+
+            // Check if returning from login
+            const pendingOAuth = sessionStorage.getItem("oauth_pending");
+            if (pendingOAuth && !authCode) {
+                const oauthData = JSON.parse(pendingOAuth);
+                authCode = oauthData.code;
+                appName = oauthData.app;
+                redirectUri = oauthData.redirect_uri;
+                
+                const newUrl = `/login/oauth?code=${authCode}&app=${encodeURIComponent(appName)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+                window.history.replaceState({}, '', newUrl);
+            }
+
+            if (!authCode || !redirectUri) {
+                showError("Ungültige Autorisierungsanfrage");
+                document.getElementById("loading-section").classList.add("hidden");
+                return;
+            }
+
+            const isLoggedIn = await checkLogin();
+            document.getElementById("loading-section").classList.add("hidden");
+
+            if (!isLoggedIn) {
+                // Store OAuth data for after login
+                sessionStorage.setItem("oauth_pending", JSON.stringify({
+                    code: authCode,
+                    app: appName,
+                    redirect_uri: redirectUri
+                }));
+                
+                document.getElementById("login-required").classList.remove("hidden");
+                document.getElementById("app-name-login").textContent = appName;
+                
+                // Start polling to check if user logs in
+                startLoginPolling();
+            } else {
+                // User is logged in - clear any pending OAuth data and show authorize section
+                sessionStorage.removeItem("oauth_pending");
+                document.getElementById("authorize-section").classList.remove("hidden");
+                document.getElementById("app-name").textContent = appName;
+                document.getElementById("auth-code").textContent = authCode;
+
+                document.getElementById("authorize-btn").addEventListener("click", authorize);
+                document.getElementById("cancel-btn").addEventListener("click", () => {
+                    sessionStorage.removeItem("oauth_pending");
+                    window.close();
+                });
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

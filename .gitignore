@@ -6,3 +6,23 @@ JesnZIP-tray.py
 JZIP-debug.log
 /output
 /uploads
+
+# Environment and secrets - NEVER commit these!
+.env
+.env.local
+.env.production
+*.pem
+*.key
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+/TrayAgent
+/.vscode

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account - jesn.zip</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<style>
+  .popup-content {
+    transform: scale(0.8);
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(.4,2,.6,1), opacity 0.25s;
+  }
+  .popup.show .popup-content {
+    transform: scale(1);
+    opacity: 1;
+  }
+  .session-card {
+    transition: all 0.2s ease;
+  }
+  .session-card:hover {
+    border-color: #fc03cf;
+  }
+  .current-session {
+    border-color: #fc03cf;
+    background: linear-gradient(135deg, rgba(252, 3, 207, 0.1) 0%, transparent 100%);
+  }
+</style>
+<body class="flex flex-col items-center min-h-screen bg-gray-900 text-white p-4">
+  <!-- Error/Success Popup -->
+  <div class="popup fixed inset-0 flex items-center justify-center hidden z-50" id="popup">
+    <div class="fixed inset-0 bg-black/50" onclick="closePopup()"></div>
+    <div class="rounded-lg border bg-gray-800 max-w-md shadow-lg p-6 popup-content relative z-10" id="popup-box" role="alert">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="rounded-full p-2" id="popup-icon-bg">
+          <svg id="popup-icon-error" width="28" height="28" fill="#ef4444" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 7h2v7h-2zm0 8h2v2h-2z"/><path d="m21.707 7.293-5-5A.996.996 0 0 0 16 2H8a.996.996 0 0 0-.707.293l-5 5A.996.996 0 0 0 2 8v8c0 .266.105.52.293.707l5 5A.996.996 0 0 0 8 22h8c.266 0 .52-.105.707-.293l5-5A.996.996 0 0 0 22 16V8a.996.996 0 0 0-.293-.707zM20 15.586 15.586 20H8.414L4 15.586V8.414L8.414 4h7.172L20 8.414v7.172z"/></svg>
+          <svg id="popup-icon-success" width="28" height="28" fill="#22c55e" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="hidden"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="m9.999 13.587-2.293-2.293-1.414 1.414 3.707 3.707 6.707-6.707-1.414-1.414z"/></svg>
+        </span>
+        <p class="font-semibold text-white" id="popup-title">Error</p>
+      </div>
+      <p class="text-gray-300 mb-4" id="popup-message">An error occurred.</p>
+      <button onclick="closePopup()" class="w-full px-4 py-2 rounded-lg font-medium text-white transition-colors" style="background-color:#fc03cf">Close</button>
+    </div>
+  </div>
+
+  <!-- Password Confirmation Modal -->
+  <div class="popup fixed inset-0 flex items-center justify-center hidden z-50" id="password-modal">
+    <div class="fixed inset-0 bg-black/50" onclick="closePasswordModal()"></div>
+    <div class="rounded-lg border border-gray-700 bg-gray-800 max-w-md shadow-lg p-6 popup-content relative z-10 w-full mx-4">
+      <h3 class="text-xl font-bold mb-4">Confirm Password</h3>
+      <p class="text-gray-400 mb-4">Enter your password to revoke this session.</p>
+      <input type="password" id="confirm-password" placeholder="Password" class="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 mb-4" style="--tw-ring-color:#fc03cf;">
+      <input type="hidden" id="session-to-revoke">
+      <div class="flex gap-3">
+        <button onclick="closePasswordModal()" class="flex-1 px-4 py-2 rounded-lg font-medium text-white bg-gray-600 hover:bg-gray-500 transition-colors">Cancel</button>
+        <button onclick="confirmRevokeSession()" class="flex-1 px-4 py-2 rounded-lg font-medium text-white transition-colors hover:opacity-80" style="background-color:#fc03cf">Revoke Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="w-full max-w-4xl mt-8">
+    <div class="flex items-center justify-between mb-8">
+      <a href="/create" class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        Back to Home
+      </a>
+      <button onclick="logout()" class="px-4 py-2 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 transition-colors text-sm">
+        Logout All Sessions
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="w-full max-w-4xl">
+    <!-- Account Header -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 mb-6">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold" style="background-color:#fc03cf">
+          <span id="user-initial">?</span>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold" id="username-display">Loading...</h1>
+          <p class="text-gray-400">Account Settings</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Settings Section -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 mb-6">
+      <h2 class="text-xl font-bold mb-6">Account Settings</h2>
+      
+      <!-- Change Username -->
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          Change Username
+        </h3>
+        <p class="text-gray-400 text-sm mb-4">Update your username. This will be used for login.</p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="text" id="new-username" placeholder="New username" class="flex-1 p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2" style="--tw-ring-color:#fc03cf;">
+          <input type="password" id="username-password" placeholder="Current password" class="flex-1 p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2" style="--tw-ring-color:#fc03cf;">
+          <button onclick="changeUsername()" class="px-6 py-3 rounded-lg font-medium text-white transition-colors hover:opacity-80" style="background-color:#fc03cf">Update</button>
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div>
+        <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          Change Password
+        </h3>
+        <p class="text-gray-400 text-sm mb-4">Update your password. You'll need to enter your current password to confirm.</p>
+        <div class="space-y-3">
+          <input type="password" id="current-password" placeholder="Current password" class="w-full p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2" style="--tw-ring-color:#fc03cf;">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input type="password" id="new-password" placeholder="New password" class="flex-1 p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2" style="--tw-ring-color:#fc03cf;">
+            <input type="password" id="confirm-new-password" placeholder="Confirm new password" class="flex-1 p-3 border border-gray-600 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2" style="--tw-ring-color:#fc03cf;">
+          </div>
+          <button onclick="changePassword()" class="px-6 py-3 rounded-lg font-medium text-white transition-colors hover:opacity-80" style="background-color:#fc03cf">Change Password</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sessions Section -->
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold">Active Sessions</h2>
+          <p class="text-gray-400 text-sm mt-1">Manage your logged-in devices and sessions</p>
+        </div>
+        <div class="text-sm text-gray-400">
+          <span id="session-count">0</span> active session(s)
+        </div>
+      </div>
+
+      <div id="sessions-list" class="space-y-4">
+        <div class="text-center py-8 text-gray-400">
+          <svg class="animate-spin h-8 w-8 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading sessions...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="mt-12 w-full max-w-6xl mx-auto">
+    <div class="flex justify-center mb-5">
+      <a href="https://github.com/deutscher775/s.jesn.zip" target="_blank" class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors duration-200 group">
+        <div class="p-2 bg-gray-800 rounded-full group-hover:bg-gray-700 border border-gray-700 transition-colors duration-200">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.461-1.11-1.461-.908-.62.069-.608.069-.608 1.004.07 1.532 1.032 1.532 1.032.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.983 1.03-2.682-.103-.253-.446-1.27.098-2.645 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.91-1.296 2.75-1.026 2.75-1.026.544 1.375.201 2.392.099 2.645.64.699 1.03 1.591 1.03 2.682 0 3.842-2.337 4.687-4.565 4.936.36.31.682.92.682 1.852 0 1.338-.012 2.419-.012 2.747 0 .267.18.578.688.48A10.013 10.013 0 0 0 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+        </div>
+        <span class="font-medium">View on GitHub</span>
+      </a>
+    </div>
+    <div class="text-center text-gray-500 text-xs space-y-2 pb-6">
+      <p class="font-medium">&copy; 2025 - Present jesn.zip. All rights reserved.</p>
+      <p class="flex justify-center gap-5 flex-wrap">
+        <a href="https://astroid.cc/imprint" class="hover:text-white transition-colors hover:underline" style="color: #fc03cf;">Imprint</a>
+        <a href="/privacy.html" class="hover:text-white transition-colors hover:underline" style="color: #fc03cf;">Privacy Policy</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const sessionKey = localStorage.getItem('session');
+    let currentSessionKey = sessionKey;
+
+    // Redirect to login if not authenticated
+    if (!sessionKey) {
+      window.location.href = '/create';
+    }
+
+    // Popup functions
+    function showPopup(title, message, isSuccess = false) {
+      const popup = document.getElementById('popup');
+      const box = document.getElementById('popup-box');
+      const iconBg = document.getElementById('popup-icon-bg');
+      const iconError = document.getElementById('popup-icon-error');
+      const iconSuccess = document.getElementById('popup-icon-success');
+      
+      document.getElementById('popup-title').textContent = title;
+      document.getElementById('popup-message').textContent = message;
+      
+      if (isSuccess) {
+        box.classList.remove('border-red-800');
+        box.classList.add('border-green-800');
+        iconBg.classList.remove('bg-red-900/30');
+        iconBg.classList.add('bg-green-900/30');
+        iconError.classList.add('hidden');
+        iconSuccess.classList.remove('hidden');
+      } else {
+        box.classList.add('border-red-800');
+        box.classList.remove('border-green-800');
+        iconBg.classList.add('bg-red-900/30');
+        iconBg.classList.remove('bg-green-900/30');
+        iconError.classList.remove('hidden');
+        iconSuccess.classList.add('hidden');
+      }
+      
+      popup.classList.remove('hidden');
+      setTimeout(() => popup.classList.add('show'), 10);
+    }
+
+    function closePopup() {
+      const popup = document.getElementById('popup');
+      popup.classList.remove('show');
+      setTimeout(() => popup.classList.add('hidden'), 250);
+    }
+
+    function showPasswordModal(sessionKeyToRevoke) {
+      document.getElementById('session-to-revoke').value = sessionKeyToRevoke;
+      document.getElementById('confirm-password').value = '';
+      const modal = document.getElementById('password-modal');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.add('show');
+        document.getElementById('confirm-password').focus();
+      }, 10);
+    }
+
+    function closePasswordModal() {
+      const modal = document.getElementById('password-modal');
+      modal.classList.remove('show');
+      setTimeout(() => modal.classList.add('hidden'), 250);
+    }
+
+    // Format date
+    function formatDate(timestamp) {
+      if (!timestamp) return 'Unknown';
+      const date = new Date(timestamp * 1000);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Parse user agent
+    function parseUserAgent(ua) {
+      if (!ua || ua === 'unknown') return { browser: 'Unknown', os: 'Unknown', device: 'Unknown' };
+      
+      let browser = 'Unknown';
+      let os = 'Unknown';
+      let device = 'Desktop';
+
+      // Detect browser
+      if (ua.includes('Firefox')) browser = 'Firefox';
+      else if (ua.includes('Edg')) browser = 'Edge';
+      else if (ua.includes('Chrome')) browser = 'Chrome';
+      else if (ua.includes('Safari')) browser = 'Safari';
+      else if (ua.includes('Opera') || ua.includes('OPR')) browser = 'Opera';
+
+      // Detect OS
+      if (ua.includes('Windows')) os = 'Windows';
+      else if (ua.includes('Mac OS')) os = 'macOS';
+      else if (ua.includes('Linux')) os = 'Linux';
+      else if (ua.includes('Android')) { os = 'Android'; device = 'Mobile'; }
+      else if (ua.includes('iPhone') || ua.includes('iPad')) { os = 'iOS'; device = ua.includes('iPad') ? 'Tablet' : 'Mobile'; }
+
+      return { browser, os, device };
+    }
+
+    // Get device icon
+    function getDeviceIcon(device) {
+      if (device === 'Mobile') {
+        return `<svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>`;
+      } else if (device === 'Tablet') {
+        return `<svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M21 4H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 1.99-.9 1.99-2L23 6c0-1.1-.9-2-2-2zm-2 14H5V6h14v12z"/></svg>`;
+      }
+      return `<svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>`;
+    }
+
+    // Render sessions
+    function renderSessions(sessions, username) {
+      const container = document.getElementById('sessions-list');
+      document.getElementById('session-count').textContent = sessions.length;
+      document.getElementById('username-display').textContent = username;
+      document.getElementById('user-initial').textContent = username.charAt(0).toUpperCase();
+
+      if (sessions.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-400 py-8">No active sessions found.</p>';
+        return;
+      }
+
+      container.innerHTML = sessions.map(session => {
+        const isCurrentSession = session.session_key === currentSessionKey;
+        const ua = parseUserAgent(session.user_agent);
+        const maskedKey = session.session_key.substring(0, 8) + '...' + session.session_key.substring(session.session_key.length - 4);
+        
+        return `
+          <div class="session-card border border-gray-700 rounded-lg p-4 ${isCurrentSession ? 'current-session' : ''}">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex items-start gap-4">
+                <div class="p-3 bg-gray-700 rounded-lg text-gray-300">
+                  ${getDeviceIcon(ua.device)}
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold">${ua.browser} on ${ua.os}</span>
+                    ${isCurrentSession ? '<span class="px-2 py-0.5 text-xs rounded-full font-medium" style="background-color:#fc03cf">Current Session</span>' : ''}
+                  </div>
+                  <div class="text-sm text-gray-400 space-y-1">
+                    <p><span class="text-gray-500">IP Address:</span> ${session.ip || 'Unknown'}</p>
+                    <p><span class="text-gray-500">Created:</span> ${formatDate(session.created_at)}</p>
+                    <p class="text-xs text-gray-500 font-mono">${maskedKey}</p>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onclick="showPasswordModal('${session.session_key}')"
+                class="px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isCurrentSession ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}"
+              >
+                ${isCurrentSession ? 'Logout' : 'Revoke'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Load sessions
+    async function loadSessions() {
+      try {
+        const res = await fetch('/api/user/sessions', {
+          headers: { 'Authorization': sessionKey }
+        });
+        
+        if (res.status === 401) {
+          localStorage.removeItem('session');
+          window.location.href = '/create';
+          return;
+        }
+        
+        const data = await res.json();
+        const userData = await fetch('/api/users/me', {
+          headers: { 'Authorization': sessionKey }
+        }).then(r => r.json());
+        if (res.ok) {
+          const rawSessions = data.sessions || [];
+          const sessions = rawSessions.map(s => {
+            const mapped = {
+              session_key: s.session_id,
+              created_at: s.created_at,
+              ip: s.ip,
+              user_agent: s.user_agent
+            };
+            if (s.is_current) currentSessionKey = mapped.session_key;
+            return mapped;
+          });
+
+          const username = userData.username || 'Your Account';
+          renderSessions(sessions, username);
+        } else {
+          showPopup('Error', data.error || 'Failed to load sessions');
+        }
+      } catch (err) {
+        showPopup('Error', 'Failed to connect to server');
+      }
+    }
+
+    // Confirm revoke session
+    async function confirmRevokeSession() {
+      const password = document.getElementById('confirm-password').value;
+      const sessionToRevoke = document.getElementById('session-to-revoke').value;
+      
+      if (!password) {
+        showPopup('Error', 'Please enter your password');
+        return;
+      }
+
+      // Check if revoking current session (logout)
+      const isCurrentSession = sessionToRevoke === currentSessionKey;
+
+      try {
+        const res = await fetch('/api/user/sessions', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': sessionKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            password: password,
+            session_id: sessionToRevoke
+          })
+        });
+
+        const data = await res.json();
+        closePasswordModal();
+
+        if (res.ok) {
+          // If we revoked our own session, redirect to home
+          if (isCurrentSession) {
+            localStorage.removeItem('session');
+            window.location.href = '/create';
+            return;
+          }
+          showPopup('Success', 'Session revoked successfully', true);
+          loadSessions();
+        } else {
+          showPopup('Error', data.error || 'Failed to revoke session');
+        }
+      } catch (err) {
+        closePasswordModal();
+        showPopup('Error', 'Failed to connect to server');
+      }
+    }
+
+    // Logout all sessions
+    async function logout() {
+      if (!confirm('Are you sure you want to logout from all sessions?')) return;
+      
+      const password = prompt('Enter your password to confirm:');
+      if (!password) return;
+
+      try {
+        const res = await fetch('/api/user/sessions', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': sessionKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            password: password,
+            revoke_all: true
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          // Logout current session too
+          await fetch('/user/logout', {
+            method: 'POST',
+            headers: { 'Authorization': sessionKey }
+          });
+          localStorage.removeItem('session');
+          window.location.href = '/create';
+        } else {
+          showPopup('Error', data.error || 'Failed to logout');
+        }
+      } catch (err) {
+        showPopup('Error', 'Failed to connect to server');
+      }
+    }
+
+    // Handle Enter key in password modal
+    document.getElementById('confirm-password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') confirmRevokeSession();
+    });
+
+    // Change Username
+    async function changeUsername() {
+      const newUsername = document.getElementById('new-username').value.trim();
+      const password = document.getElementById('username-password').value;
+
+      if (!newUsername) {
+        showPopup('Error', 'Please enter a new username');
+        return;
+      }
+      if (!password) {
+        showPopup('Error', 'Please enter your current password');
+        return;
+      }
+
+      // Validate username format
+      if (!/^[a-zA-Z0-9_-]{3,32}$/.test(newUsername)) {
+        showPopup('Error', 'Username must be 3-32 characters and contain only letters, numbers, underscores, and hyphens');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/user/username', {
+          method: 'PUT',
+          headers: {
+            'Authorization': sessionKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            new_username: newUsername,
+            password: password
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showPopup('Success', 'Username updated successfully', true);
+          document.getElementById('new-username').value = '';
+          document.getElementById('username-password').value = '';
+          // Reload to update display
+          loadSessions();
+        } else {
+          showPopup('Error', data.error || 'Failed to update username');
+        }
+      } catch (err) {
+        showPopup('Error', 'Failed to connect to server');
+      }
+    }
+
+    // Change Password
+    async function changePassword() {
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-new-password').value;
+
+      if (!currentPassword) {
+        showPopup('Error', 'Please enter your current password');
+        return;
+      }
+      if (!newPassword) {
+        showPopup('Error', 'Please enter a new password');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showPopup('Error', 'New passwords do not match');
+        return;
+      }
+      if (newPassword.length < 8) {
+        showPopup('Error', 'Password must be at least 8 characters long');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/user/password', {
+          method: 'PUT',
+          headers: {
+            'Authorization': sessionKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            current_password: currentPassword,
+            new_password: newPassword,
+            confirm_password: confirmPassword
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          showPopup('Success', 'Password updated successfully', true);
+          document.getElementById('current-password').value = '';
+          document.getElementById('new-password').value = '';
+          document.getElementById('confirm-new-password').value = '';
+        } else {
+          showPopup('Error', data.error || 'Failed to update password');
+        }
+      } catch (err) {
+        showPopup('Error', 'Failed to connect to server');
+      }
+    }
+
+    // Load sessions on page load
+    loadSessions();
+  </script>
+</body>
+</html>
