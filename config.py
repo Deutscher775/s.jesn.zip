@@ -11,6 +11,12 @@ try:
 except ImportError:
     pass  # python-dotenv not installed, skip
 
+# check if .env file exists (just print warning, don't fail)
+if not os.path.exists(".env"):
+    import sys
+    current_dir = os.getcwd()
+    print(f"Warning: .env file not found in {current_dir}. Using environment variables from system.", file=sys.stderr)
+
 
 def get_env(key: str) -> str:
     """Get environment variable or raise error if not set."""

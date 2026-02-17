@@ -26,3 +26,5 @@ venv/
 env/
 /TrayAgent
 /.vscode
+/webinterface/node_modules
+webinterface/package-lock.json

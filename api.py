@@ -499,6 +499,9 @@ app.add_middleware(
 def read_root():
     return fastapi.responses.RedirectResponse(url="/create", status_code=302)
 
+@app.get("/dist/output.css")
+def serve_output_css():
+    return fastapi.responses.FileResponse(f"{pathlib.Path(__file__).parent.resolve()}/webinterface/dist/output.css")
 
 @app.get("/create")
 def render_create_webinterface():
